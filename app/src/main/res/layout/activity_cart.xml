@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8F9FA">
+
+    <LinearLayout
+        android:id="@+id/headerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#FFFFFF"
+        android:elevation="2dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView android:id="@+id/ivMenu" android:layout_width="28dp" android:layout_height="28dp" android:src="@android:drawable/ic_menu_sort_by_size" android:rotation="90" app:tint="#333333" />
+        <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+        <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@android:drawable/ic_menu_agenda" app:tint="#1E88E5" />
+        <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1" />
+        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_search" android:layout_marginEnd="16dp" app:tint="#333333" />
+        <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_popup_reminder" app:tint="#333333" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvCartItems"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingTop="8dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@id/checkoutSection"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout" />
+
+    <LinearLayout
+        android:id="@+id/checkoutSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        android:elevation="8dp"
+        android:orientation="vertical"
+        android:padding="16dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView">
+
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="16dp">
+            <ImageView android:id="@+id/icNote" android:layout_width="20dp" android:layout_height="20dp" android:src="@android:drawable/ic_menu_edit" android:layout_centerVertical="true" app:tint="#333333"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Order notes" android:textSize="14sp" android:textStyle="bold" android:textColor="#333333" android:layout_toEndOf="@id/icNote" android:layout_marginStart="8dp" android:layout_centerVertical="true"/>
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Add note >" android:textSize="14sp" android:textColor="#666666" android:layout_alignParentEnd="true" android:layout_centerVertical="true"/>
+        </RelativeLayout>
+
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Estimated total" android:textSize="16sp" android:textStyle="bold" android:textColor="#333333" android:layout_alignParentStart="true" />
+            <TextView android:id="@+id/tvTotalAmount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="₫ 2,953,000 VND" android:textSize="18sp" android:textStyle="bold" android:textColor="#333333" android:layout_alignParentEnd="true" />
+        </RelativeLayout>
+
+        <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Taxes, discounts and shipping calculated at checkout" android:textSize="12sp" android:textColor="#666666" android:layout_marginBottom="16dp"/>
+
+        <Button
+            android:id="@+id/btnContinue"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:backgroundTint="#4285F4"
+            android:text="Continue"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#FFFFFF"
+        app:itemIconTint="@color/black"
+        app:itemTextColor="@color/black"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
