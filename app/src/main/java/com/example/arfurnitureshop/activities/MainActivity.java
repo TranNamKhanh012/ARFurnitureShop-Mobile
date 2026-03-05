@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.arfurnitureshop.R;
 import com.example.arfurnitureshop.adapters.ProductAdapter;
+import com.example.arfurnitureshop.api.ApiService;
 import com.example.arfurnitureshop.api.RetrofitClient;
 import com.example.arfurnitureshop.models.Product;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -35,94 +37,119 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // --- 1. KHỞI TẠO MENU TRƯỢT (SIDEBAR) ---
-        DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
-        ImageView ivMenu = findViewById(R.id.ivMenu);
-        NavigationView navigationView = findViewById(R.id.navigationView);
-
-        // Mở menu trượt khi bấm vào nút 3 gạch ngang
-        ivMenu.setOnClickListener(v -> {
-            drawerLayout.openDrawer(GravityCompat.START);
-        });
-
-        // Xử lý sự kiện khi bấm vào các mục trong menu trượt
-        navigationView.setNavigationItemSelectedListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.nav_profile) {
-                Toast.makeText(MainActivity.this, "My Profile", Toast.LENGTH_SHORT).show();
-            } else if (id == R.id.nav_setting) {
-                Toast.makeText(MainActivity.this, "Settings", Toast.LENGTH_SHORT).show();
-            }
-            // Đóng menu sau khi bấm xong
-            drawerLayout.closeDrawer(GravityCompat.START);
-            return true;
-        });
-
-        // --- 2. ÁNH XẠ VIEW GIAO DIỆN CHÍNH ---
+        // --- 1. ÁNH XẠ TOÀN BỘ VIEW TRƯỚC TIÊN ---
         rvBestSellers = findViewById(R.id.rvBestSellers);
         rvAllProducts = findViewById(R.id.rvAllProducts);
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
 
-        // Cấu hình lướt ngang cho các danh sách
-        rvBestSellers.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
-        rvAllProducts.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+        TextView tvSeeAllBestSellers = findViewById(R.id.tvSeeAllBestSellers);
+        TextView tvSeeAllProducts = findViewById(R.id.tvSeeAllProducts);
 
-        // ========================================================
-        // --- 2.5. KHỞI TẠO BANNER CHẠY NGANG (VIEWPAGER2) ---
-        // ========================================================
-        androidx.viewpager2.widget.ViewPager2 viewPagerBanner = findViewById(R.id.viewPagerBanner);
+        DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
+        ImageView ivMenu = findViewById(R.id.ivMenu);
+        NavigationView navigationView = findViewById(R.id.navigationView);
 
-        java.util.List<String> bannerImages = new java.util.ArrayList<>();
-        bannerImages.add("https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=1000&auto=format&fit=crop");
-        bannerImages.add("https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1000&auto=format&fit=crop");
-        bannerImages.add("https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1000&auto=format&fit=crop");
+        // --- 2. CẤU HÌNH RECYCLERVIEW ---
+        // Bắt buộc phải cấu hình LayoutManager trước khi gọi API
+        if (rvBestSellers != null && rvAllProducts != null) {
+            rvBestSellers.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+            rvAllProducts.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
+        }
 
-        com.example.arfurnitureshop.adapters.BannerAdapter bannerAdapter = new com.example.arfurnitureshop.adapters.BannerAdapter(bannerImages);
-        viewPagerBanner.setAdapter(bannerAdapter);
-        // ========================================================
+        // --- 3. KHỞI TẠO MENU TRƯỢT (SIDEBAR) ---
+        if (ivMenu != null && drawerLayout != null) {
+            ivMenu.setOnClickListener(v -> drawerLayout.openDrawer(GravityCompat.START));
+        }
 
-        // --- 3. GỌI API ĐỂ NẠP DỮ LIỆU THẬT ---
-        fetchProductsFromApi();
-
-        // --- 4. XỬ LÝ THANH ĐIỀU HƯỚNG DƯỚI CÙNG (BOTTOM NAV) ---
-        bottomNav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.nav_home) {
-                Toast.makeText(MainActivity.this, "Đang ở Trang chủ", Toast.LENGTH_SHORT).show();
+        if (navigationView != null) {
+            navigationView.setNavigationItemSelectedListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.nav_profile) {
+                    Toast.makeText(MainActivity.this, "My Profile", Toast.LENGTH_SHORT).show();
+                } else if (id == R.id.nav_setting) {
+                    Toast.makeText(MainActivity.this, "Settings", Toast.LENGTH_SHORT).show();
+                }
+                drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
-            } else if (itemId == R.id.nav_category) {
-                Toast.makeText(MainActivity.this, "Mở Danh mục", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if (itemId == R.id.nav_cart) {
-                // Chuyển sang trang Giỏ hàng
-                Intent intent = new Intent(MainActivity.this, CartActivity.class);
+            });
+        }
+
+        // --- 4. XỬ LÝ NÚT "SEE ALL" ---
+        if (tvSeeAllBestSellers != null) {
+            tvSeeAllBestSellers.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, AllProductsActivity.class);
+                intent.putExtra("PAGE_TITLE", "Best Sellers");
                 startActivity(intent);
-                return true;
-            } else if (itemId == R.id.nav_wishlist) {
-                Toast.makeText(MainActivity.this, "Mở Wishlist", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if (itemId == R.id.nav_account) {
-                Toast.makeText(MainActivity.this, "Mở Tài khoản", Toast.LENGTH_SHORT).show();
-                return true;
-            }
-            return false;
-        });
+            });
+        }
+
+        if (tvSeeAllProducts != null) {
+            tvSeeAllProducts.setOnClickListener(v -> {
+                Intent intent = new Intent(MainActivity.this, AllProductsActivity.class);
+                intent.putExtra("PAGE_TITLE", "All Products");
+                startActivity(intent);
+            });
+        }
+
+        // --- 5. KHỞI TẠO BANNER CHẠY NGANG (VIEWPAGER2) ---
+        androidx.viewpager2.widget.ViewPager2 viewPagerBanner = findViewById(R.id.viewPagerBanner);
+        if (viewPagerBanner != null) {
+            java.util.List<String> bannerImages = new java.util.ArrayList<>();
+            bannerImages.add("https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=1000&auto=format&fit=crop");
+            bannerImages.add("https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1000&auto=format&fit=crop");
+            bannerImages.add("https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1000&auto=format&fit=crop");
+
+            com.example.arfurnitureshop.adapters.BannerAdapter bannerAdapter = new com.example.arfurnitureshop.adapters.BannerAdapter(bannerImages);
+            viewPagerBanner.setAdapter(bannerAdapter);
+        }
+
+        // --- 6. XỬ LÝ THANH ĐIỀU HƯỚNG DƯỚI CÙNG (BOTTOM NAV) ---
+        if (bottomNav != null) {
+            bottomNav.setOnItemSelectedListener(item -> {
+                int itemId = item.getItemId();
+                if (itemId == R.id.nav_home) {
+                    return true;
+                } else if (itemId == R.id.nav_category) {
+                    Intent intent = new Intent(MainActivity.this, AllCategoriesActivity.class);
+                    startActivity(intent);
+                    return true;
+                } else if (itemId == R.id.nav_cart) {
+                    startActivity(new Intent(MainActivity.this, CartActivity.class));
+                    return true;
+                } else if (itemId == R.id.nav_wishlist) {
+                    Toast.makeText(MainActivity.this, "Mở Wishlist", Toast.LENGTH_SHORT).show();
+                    return true;
+                } else if (itemId == R.id.nav_account) {
+                    Toast.makeText(MainActivity.this, "Mở Tài khoản", Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        // --- 7. GỌI API NẠP DỮ LIỆU ---
+        // Lệnh này phải để sau cùng, khi tất cả View đã được ánh xạ xong
+        fetchProductsFromApi();
     }
 
     // ================= HÀM LẤY DỮ LIỆU TỪ BACKEND =================
     private void fetchProductsFromApi() {
-        RetrofitClient.getApiService().getProducts().enqueue(new Callback<List<Product>>() {
+        RetrofitClient.getClient().create(ApiService.class).getProducts().enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<Product> products = response.body();
+                    List<Product> fullList = response.body();
 
-                    // Nạp dữ liệu thật vào Adapter và hiển thị lên RecyclerView
-                    productAdapter = new ProductAdapter(products);
-                    rvBestSellers.setAdapter(productAdapter);
-                    rvAllProducts.setAdapter(productAdapter);
+                    // Cắt 6 sản phẩm (Bọc thêm new ArrayList)
+                    int limit = Math.min(fullList.size(), 6);
+                    List<Product> limitedList = new java.util.ArrayList<>(fullList.subList(0, limit));
+
+                    // Nạp dữ liệu vào (Đã check null để tránh lỗi)
+                    productAdapter = new ProductAdapter(limitedList);
+                    if (rvBestSellers != null) rvBestSellers.setAdapter(productAdapter);
+                    if (rvAllProducts != null) rvAllProducts.setAdapter(productAdapter);
                 } else {
-                    Toast.makeText(MainActivity.this, "Không lấy được dữ liệu sản phẩm", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Lỗi API: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -132,5 +159,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Lỗi kết nối máy chủ", Toast.LENGTH_SHORT).show();
             }
         });
+
+
     }
 }

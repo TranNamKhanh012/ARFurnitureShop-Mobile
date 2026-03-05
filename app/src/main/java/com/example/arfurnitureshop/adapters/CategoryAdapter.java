@@ -1,6 +1,9 @@
 package com.example.arfurnitureshop.adapters;
 
 
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.arfurnitureshop.R;
+import com.example.arfurnitureshop.activities.CategoryProductsActivity;
 import com.example.arfurnitureshop.models.Category;
 import java.util.List;
 
@@ -34,17 +38,26 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     @Override
     public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
         Category category = categoryList.get(position);
-        if (category == null) return;
 
+        // Hiển thị tên và ảnh danh mục
         holder.tvCategoryName.setText(category.getName());
 
-        // Dùng Glide để load ảnh từ URL vào ImageView
-        // image_151ac1.png cho thấy bạn đang thiếu bước này
+        // Sử dụng Glide để load ảnh, thêm error() để tránh crash nếu link ảnh sofa mới bị lỗi
         Glide.with(holder.itemView.getContext())
-                .load(category.getImageUrl()) // Link lấy từ Database
-                .placeholder(android.R.drawable.ic_menu_gallery) // Thêm chữ android. vào trước
-                .error(android.R.drawable.ic_menu_report_image)  // Thêm chữ android. vào trước
+                .load(category.getImageUrl())
+                .placeholder(android.R.drawable.ic_menu_gallery) // Icon mặc định của Android
+                .error(android.R.drawable.stat_notify_error)    // Icon lỗi mặc định// Ảnh lỗi
                 .into(holder.imgCategory);
+
+        // --- SỰ KIỆN CLICK: Chuyển sang màn hình lọc sản phẩm theo Category ---
+        holder.itemView.setOnClickListener(v -> {
+            Log.d("CLICK_CHECK", "Đã bấm vào danh mục: " + category.getName()); // Thêm dòng này để kiểm tra
+            Context context = v.getContext();
+            Intent intent = new Intent(context, CategoryProductsActivity.class);
+            intent.putExtra("CATEGORY_ID", category.getId());
+            intent.putExtra("CATEGORY_NAME", category.getName());
+            context.startActivity(intent);
+        });
     }
 
     @Override
@@ -66,5 +79,6 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             tvCategoryName = itemView.findViewById(R.id.tvCategoryName);
         }
     }
+
 
 }

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="160dp"
     android:layout_height="wrap_content"
     android:layout_marginEnd="16dp"
@@ -23,13 +24,17 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
-            android:layout_width="28dp"
-            android:layout_height="28dp"
+            android:id="@+id/ivWishlist"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentTop="true"
             android:layout_margin="8dp"
-            android:src="@android:drawable/ic_input_add"
-            app:tint="#BDBDBD"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:background="@drawable/circle_background_white"
+            android:padding="6dp"
+            android:src="@drawable/ic_heart_empty"
+            app:tint="#E53935"
+            tools:ignore="MissingConstraints" />
 
         <TextView
             android:layout_width="wrap_content"

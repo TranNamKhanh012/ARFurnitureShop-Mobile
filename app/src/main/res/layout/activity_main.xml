@@ -105,6 +105,7 @@
                         android:layout_alignParentStart="true" />
 
                     <TextView
+                        android:id="@+id/tvSeeAllBestSellers"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="See All >"
@@ -138,6 +139,16 @@
                         android:textStyle="bold"
                         android:textColor="#333333"
                         android:layout_alignParentStart="true" />
+
+                    <TextView
+                        android:id="@+id/tvSeeAllProducts"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="See All >"
+                        android:textSize="16sp"
+                        android:textColor="#1E88E5"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"/>
                 </RelativeLayout>
 
                 <androidx.recyclerview.widget.RecyclerView

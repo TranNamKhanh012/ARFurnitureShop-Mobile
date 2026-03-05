@@ -2,48 +2,53 @@ package com.example.arfurnitureshop.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.example.arfurnitureshop.R;
+import com.example.arfurnitureshop.adapters.CartAdapter;
+import com.example.arfurnitureshop.utils.CartManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import java.text.DecimalFormat;
 
 public class CartActivity extends AppCompatActivity {
+    // PHẢI KHAI BÁO BIẾN Ở ĐÂY ĐỂ HẾT ĐỎ
+    private RecyclerView rv;
+    private TextView tvTotal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
 
-        // 1. Ánh xạ thanh Menu dưới cùng
-        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
+        // Ánh xạ View từ layout activity_cart.xml
+        rv = findViewById(R.id.rvCartItems);
+        tvTotal = findViewById(R.id.tvTotalAmount);
 
-        // 2. BẬT SÁNG icon Giỏ hàng (Cart) vì chúng ta đang ở trang này
-        bottomNav.setSelectedItemId(R.id.nav_cart);
+        rv.setLayoutManager(new LinearLayoutManager(this));
 
-        // 3. Xử lý sự kiện khi bấm vào các nút
-        bottomNav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
+        // Gắn Adapter và truyền hàm updateTotal để cập nhật tiền khi tăng/giảm số lượng
+        rv.setAdapter(new CartAdapter(CartManager.getInstance(this).getItems(), this::updateTotal));
 
-            if (itemId == R.id.nav_home) {
-                // Quay lại Trang chủ (MainActivity)
-                Intent intent = new Intent(CartActivity.this, MainActivity.class);
+        updateTotal();
 
-                // Mẹo cực hay: Dùng lệnh này để không tạo ra nhiều trang chủ chồng lên nhau
-                // gây nặng máy, nó sẽ gọi lại trang chủ cũ đã mở.
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-
-                startActivity(intent);
-                finish(); // Đóng trang Giỏ hàng hiện tại lại cho nhẹ bộ nhớ
-                return true;
-
-            } else if (itemId == R.id.nav_cart) {
-                // Đang ở Giỏ hàng rồi thì không cần chuyển trang
+        BottomNavigationView nav = findViewById(R.id.bottomNavigationView);
+        nav.setSelectedItemId(R.id.nav_cart);
+        nav.setOnItemSelectedListener(item -> {
+            if(item.getItemId() == R.id.nav_home) {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
                 return true;
             }
-
-            // Tương lai bạn có thể làm tương tự cho nav_wishlist, nav_account...
-
-            return false;
+            return item.getItemId() == R.id.nav_cart;
         });
+    }
+
+    // PHẢI CÓ HÀM NÀY ĐỂ HẾT LỖI "this::updateTotal"
+    private void updateTotal() {
+        DecimalFormat df = new DecimalFormat("#,###");
+        double total = CartManager.getInstance(this).getTotal();
+        tvTotal.setText("₫ " + df.format(total) + " VND");
     }
 }

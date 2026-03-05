@@ -7,7 +7,7 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
-
+    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:usesCleartextTraffic="true"
         android:allowBackup="true"
@@ -33,6 +33,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.CartActivity" android:exported="false" />
+        <activity android:name=".activities.AllProductsActivity" />
+        <activity android:name=".activities.CategoryProductsActivity" />
+        <activity android:name=".activities.AllCategoriesActivity" />
+        <activity android:name=".activities.ProductDetailActivity" />
     </application>
 
 </manifest>
