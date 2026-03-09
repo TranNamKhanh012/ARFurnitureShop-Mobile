@@ -1,4 +1,4 @@
-package com.example.arfurnitureshop.activities; // Sửa lại đúng tên package của bạn
+package com.example.arfurnitureshop.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,49 +6,87 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
-import com.example.arfurnitureshop.R; // Sửa lại đúng tên package
+
+import com.example.arfurnitureshop.R;
+import com.example.arfurnitureshop.api.ApiService;
+import com.example.arfurnitureshop.models.LoginRequest;
+import com.example.arfurnitureshop.models.User;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
-
-    private EditText edtUsername, edtPassword;
-    private Button btnLogin;
-    private TextView tvRegister;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Ánh xạ View
-        edtUsername = findViewById(R.id.edtUsername);
-        edtPassword = findViewById(R.id.edtPassword);
-        btnLogin = findViewById(R.id.btnLogin);
-        tvRegister = findViewById(R.id.tvRegister);
+        EditText etUser = findViewById(R.id.etLoginUsername);
+        EditText etPass = findViewById(R.id.etLoginPassword);
+        Button btnLogin = findViewById(R.id.btnLogin);
+        TextView tvGoToRegister = findViewById(R.id.tvGoToRegister);
 
-        // Xử lý sự kiện nút Đăng nhập
-        btnLogin.setOnClickListener(v -> {
-            String username = edtUsername.getText().toString().trim();
-            String password = edtPassword.getText().toString().trim();
-
-            if (username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show();
-            } else {
-                // TODO: Sau này sẽ gọi API kiểm tra đăng nhập ở đây
-                // Tạm thời giả lập đăng nhập thành công và chuyển sang Trang chủ (MainActivity)
-                Toast.makeText(LoginActivity.this, "Đăng nhập thành công!", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(intent);
-                finish(); // Đóng màn hình Login
-            }
+        // Chuyển sang trang Đăng ký
+        tvGoToRegister.setOnClickListener(v -> {
+            startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
         });
 
-        // Xử lý sự kiện bấm vào "Đăng ký ngay"
-        tvRegister.setOnClickListener(v -> {
-            // Chuyển sang màn hình Đăng ký
-            // Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-            // startActivity(intent);
-            Toast.makeText(LoginActivity.this, "Sẽ chuyển sang màn hình Đăng ký", Toast.LENGTH_SHORT).show();
+        // Xử lý Đăng nhập
+        btnLogin.setOnClickListener(v -> {
+            String username = etUser.getText().toString().trim();
+            String password = etPass.getText().toString().trim();
+
+            if (username.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Vui lòng nhập đủ thông tin!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Tạo đối tượng gửi đi
+            LoginRequest loginRequest = new LoginRequest(username, password);
+
+            // Gọi API
+            ApiService.apiService.login(loginRequest).enqueue(new Callback<User>() {
+                @Override
+                public void onResponse(Call<User> call, Response<User> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        User loggedInUser = response.body();
+                        Toast.makeText(LoginActivity.this, "Xin chào " + loggedInUser.getFullName(), Toast.LENGTH_SHORT).show();
+
+                        // ==========================================
+                        // LƯU THÔNG TIN VÀO BỘ NHỚ (SharedPreferences)
+                        // ==========================================
+                        android.content.SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", android.content.Context.MODE_PRIVATE);
+                        android.content.SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putBoolean("IS_LOGGED_IN", true);
+                        editor.putInt("USER_ID", loggedInUser.getId());
+                        editor.putString("USERNAME", loggedInUser.getUsername());
+                        editor.putString("FULL_NAME", loggedInUser.getFullName());
+                        editor.putString("ROLE", loggedInUser.getRole());
+                        editor.apply(); // Bắt buộc phải có lệnh này để lưu
+                        // ==========================================
+
+                        // KIỂM TRA QUYỀN (ROLE) ĐỂ CHUYỂN TRANG
+                        if ("Admin".equals(loggedInUser.getRole())) {
+                            Toast.makeText(LoginActivity.this, "Tài khoản Admin vui lòng đăng nhập trên Web!", Toast.LENGTH_LONG).show();
+                        } else {
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    } else {
+                        Toast.makeText(LoginActivity.this, "Sai tài khoản hoặc mật khẩu!", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<User> call, Throwable t) {
+                    Toast.makeText(LoginActivity.this, "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
     }
 }

@@ -7,7 +7,6 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
-    <uses-permission android:name="android.permission.INTERNET" />
     <application
         android:usesCleartextTraffic="true"
         android:allowBackup="true"
@@ -37,6 +36,10 @@
         <activity android:name=".activities.CategoryProductsActivity" />
         <activity android:name=".activities.AllCategoriesActivity" />
         <activity android:name=".activities.ProductDetailActivity" />
+        <activity android:name=".activities.WishlistActivity" />
+        <activity android:name=".activities.AccountActivity" />
+        <activity android:name=".activities.LoginActivity" />
+        <activity android:name=".activities.RegisterActivity" />
     </application>
 
 </manifest>

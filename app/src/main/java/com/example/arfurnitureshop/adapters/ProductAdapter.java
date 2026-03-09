@@ -75,18 +75,49 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
         final boolean[] isFavorite = {false};
 
-        holder.ivWishlist.setOnClickListener(v -> {
-            isFavorite[0] = !isFavorite[0]; // Đảo trạng thái
+        // 1. KIỂM TRA TRẠNG THÁI LÚC VỪA MỞ LÊN (ĐỂ HIỂN THỊ ĐÚNG MÀU TIM)
+        boolean isFav = com.example.arfurnitureshop.models.WishlistManager.isFavorite(product.getId());
+        if (isFav) {
+            holder.ivWishlist.setImageResource(R.drawable.ic_heart_filled);
+        } else {
+            holder.ivWishlist.setImageResource(R.drawable.ic_heart_empty);
+        }
 
-            if (isFavorite[0]) {
-                // Đổi thành trái tim đặc
-                holder.ivWishlist.setImageResource(R.drawable.ic_heart_filled);
-                android.widget.Toast.makeText(holder.itemView.getContext(), "Đã thích: " + product.getName(), android.widget.Toast.LENGTH_SHORT).show();
-                // TODO: Gọi API lưu sản phẩm này vào CSDL (bảng Wishlist)
+        // 2. XỬ LÝ SỰ KIỆN BẤM VÀO TRÁI TIM (GỘP CHUNG UI + LOCAL + DATABASE)
+        // Sự kiện khi bấm vào nút Trái tim (Wishlist) trên từng sản phẩm
+        holder.ivWishlist.setOnClickListener(v -> {
+
+            // DÙNG LUÔN BIẾN context CÓ SẴN CỦA ADAPTER, KHÔNG CẦN KHAI BÁO NỮA
+            android.content.SharedPreferences prefs = context.getSharedPreferences("UserPrefs", android.content.Context.MODE_PRIVATE);
+            boolean isLoggedIn = prefs.getBoolean("IS_LOGGED_IN", false);
+
+            if (!isLoggedIn) {
+                // NẾU CHƯA ĐĂNG NHẬP -> Đá sang trang Login
+                android.widget.Toast.makeText(context, "Vui lòng đăng nhập để lưu Yêu thích!", android.widget.Toast.LENGTH_SHORT).show();
+                android.content.Intent intent = new android.content.Intent(context, com.example.arfurnitureshop.activities.LoginActivity.class);
+                context.startActivity(intent);
             } else {
-                // Đổi về trái tim rỗng
-                holder.ivWishlist.setImageResource(R.drawable.ic_heart_empty);
-                android.widget.Toast.makeText(holder.itemView.getContext(), "Đã bỏ thích: " + product.getName(), android.widget.Toast.LENGTH_SHORT).show();
+                // NẾU ĐÃ ĐĂNG NHẬP -> Lấy đủ 2 ID ra
+                int userId = prefs.getInt("USER_ID", -1);
+                int productId = product.getId();
+
+                // GỌI API VỚI ĐỦ 2 THAM SỐ
+                com.example.arfurnitureshop.api.ApiService.apiService.addToWishlist(userId, productId).enqueue(new retrofit2.Callback<Void>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            android.widget.Toast.makeText(context, "Đã thêm vào Wishlist!", android.widget.Toast.LENGTH_SHORT).show();
+                            // (Tùy chọn: Đổi màu trái tim)
+                        } else {
+                            android.widget.Toast.makeText(context, "Lỗi từ Server!", android.widget.Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<Void> call, Throwable t) {
+                        android.widget.Toast.makeText(context, "Lỗi kết nối mạng!", android.widget.Toast.LENGTH_SHORT).show();
+                    }
+                });
             }
         });
         // --- 4. SỰ KIỆN BẤM NÚT ADD TO CART BÊN NGOÀI (Giữ nguyên của bạn) ---

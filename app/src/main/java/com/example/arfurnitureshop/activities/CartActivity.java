@@ -33,15 +33,46 @@ public class CartActivity extends AppCompatActivity {
 
         updateTotal();
 
+        // ==========================================
+        // XỬ LÝ THANH MENU FOOTER (BOTTOM NAVIGATION)
+        // ==========================================
         BottomNavigationView nav = findViewById(R.id.bottomNavigationView);
+
+        // Làm sáng icon Giỏ hàng
         nav.setSelectedItemId(R.id.nav_cart);
+
         nav.setOnItemSelectedListener(item -> {
-            if(item.getItemId() == R.id.nav_home) {
-                startActivity(new Intent(this, MainActivity.class));
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.nav_home) {
+                // Về Trang chủ (Xóa các màn hình thừa đi cho nhẹ máy)
+                Intent intent = new Intent(CartActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+                finish();
+                return true;
+
+            } else if (itemId == R.id.nav_category) {
+                // Mở trang Danh mục
+                startActivity(new Intent(CartActivity.this, AllCategoriesActivity.class));
+                finish();
+                return true;
+
+            } else if (itemId == R.id.nav_cart) {
+                // Đang ở trang Giỏ hàng rồi thì không làm gì cả
+                return true;
+
+            } else if (itemId == R.id.nav_wishlist) {
+                // Mở trang Danh sách Yêu thích
+                startActivity(new Intent(CartActivity.this, WishlistActivity.class));
                 finish();
                 return true;
             }
-            return item.getItemId() == R.id.nav_cart;
+            else if (itemId == R.id.nav_account) {
+                startActivity(new Intent(CartActivity.this, AccountActivity.class));
+                return true;
+            }
+            return false;
         });
     }
 

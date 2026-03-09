@@ -11,6 +11,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.arfurnitureshop.R;
+import com.example.arfurnitureshop.api.ApiService;
+import com.example.arfurnitureshop.models.Product; // Đã thêm import Product
+import com.example.arfurnitureshop.utils.CartManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.text.NumberFormat;
@@ -32,7 +35,6 @@ public class ProductDetailActivity extends AppCompatActivity {
         TextView tvProductPrice = findViewById(R.id.tvProductPrice);
         Button btnAddToCart = findViewById(R.id.btnAddToCart);
 
-        // Các nút mới thêm
         Button btnBuyNow = findViewById(R.id.btnBuyNow);
         ImageView ivCartTop = findViewById(R.id.ivCartTop);
         FloatingActionButton fabWishlist = findViewById(R.id.fabWishlist);
@@ -44,6 +46,10 @@ public class ProductDetailActivity extends AppCompatActivity {
         String name = getIntent().getStringExtra("PRODUCT_NAME");
         double price = getIntent().getDoubleExtra("PRODUCT_PRICE", 0);
         String imageUrl = getIntent().getStringExtra("PRODUCT_IMAGE");
+
+        // --- LẮP RÁP LẠI ĐỐI TƯỢNG SẢN PHẨM TỪ DỮ LIỆU ĐÃ NHẬN ---
+        Product currentProduct = new Product(productId, name, imageUrl, "", price);
+        // ---------------------------------------------------------
 
         if (name != null) tvProductName.setText(name);
 
@@ -64,10 +70,40 @@ public class ProductDetailActivity extends AppCompatActivity {
         // Nút Back (Quay lại)
         ivBack.setOnClickListener(v -> finish());
 
-        // Nút Thêm vào giỏ hàng
+        // ==========================================
+        // --- SỰ KIỆN NÚT THÊM VÀO GIỎ HÀNG ---
+        // ==========================================
         btnAddToCart.setOnClickListener(v -> {
-            Toast.makeText(this, "Đã thêm " + name + " vào giỏ!", Toast.LENGTH_SHORT).show();
-            // Code lưu vào Database sẽ viết sau
+            // 1. Mở bộ nhớ ra kiểm tra xem đã đăng nhập chưa
+            android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+            boolean isLoggedIn = prefs.getBoolean("IS_LOGGED_IN", false);
+
+            if (!isLoggedIn) {
+                // NẾU CHƯA ĐĂNG NHẬP -> Báo lỗi và đuổi sang trang Login
+                Toast.makeText(ProductDetailActivity.this, "Bạn cần đăng nhập để thêm vào giỏ hàng!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(ProductDetailActivity.this, LoginActivity.class);
+                startActivity(intent);
+            } else {
+                // NẾU ĐÃ ĐĂNG NHẬP -> Lấy Mã người dùng (UserId) ra
+                int userId = prefs.getInt("USER_ID", -1);
+
+                // Gửi cả UserId và ProductId lên máy chủ C#
+                ApiService.apiService.addToCart(userId, productId).enqueue(new retrofit2.Callback<Void>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(ProductDetailActivity.this, "Đã thêm " + currentProduct.getName() + " vào giỏ!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(ProductDetailActivity.this, "Lỗi từ Server C#!", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(retrofit2.Call<Void> call, Throwable t) {
+                        Toast.makeText(ProductDetailActivity.this, "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
         });
 
         // Nút Mua ngay
@@ -83,20 +119,47 @@ public class ProductDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // Nút Trái tim (Wishlist)
-        final boolean[] isFavorite = {false}; // Trạng thái mặc định ban đầu là chưa thích
+        // ==========================================
+        // --- SỰ KIỆN NÚT TRÁI TIM (WISHLIST) ---
+        // ==========================================
+        final boolean[] isFavorite = {false}; // Trạng thái mặc định ban đầu
 
         fabWishlist.setOnClickListener(v -> {
-            isFavorite[0] = !isFavorite[0]; // Đảo trạng thái
+            // 1. Mở bộ nhớ ra kiểm tra đăng nhập
+            android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+            boolean isLoggedIn = prefs.getBoolean("IS_LOGGED_IN", false);
 
-            if (isFavorite[0]) {
-                // Đổi thành trái tim đỏ
-                fabWishlist.setImageResource(R.drawable.ic_heart_filled);
-                Toast.makeText(this, "Đã thêm vào mục Yêu thích!", Toast.LENGTH_SHORT).show();
+            if (!isLoggedIn) {
+                // NẾU CHƯA ĐĂNG NHẬP -> Yêu cầu đăng nhập
+                Toast.makeText(ProductDetailActivity.this, "Vui lòng đăng nhập để lưu Yêu thích!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(ProductDetailActivity.this, LoginActivity.class);
+                startActivity(intent);
             } else {
-                // Đổi về trái tim rỗng
-                fabWishlist.setImageResource(R.drawable.ic_heart_empty);
-                Toast.makeText(this, "Đã bỏ Yêu thích!", Toast.LENGTH_SHORT).show();
+                // NẾU ĐÃ ĐĂNG NHẬP -> Tiến hành xử lý
+                isFavorite[0] = !isFavorite[0]; // Đảo trạng thái
+
+                if (isFavorite[0]) {
+                    fabWishlist.setImageResource(R.drawable.ic_heart_filled);
+
+                    // Lấy ID gửi lên API thêm vào Wishlist
+                    int userId = prefs.getInt("USER_ID", -1);
+
+
+                    ApiService.apiService.addToWishlist(userId, productId).enqueue(new retrofit2.Callback<Void>() {
+                        @Override
+                        public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                            if (response.isSuccessful()) {
+                                Toast.makeText(ProductDetailActivity.this, "Đã lưu vào danh sách Yêu thích!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        @Override
+                        public void onFailure(retrofit2.Call<Void> call, Throwable t) { }
+                    });
+                } else {
+                    fabWishlist.setImageResource(R.drawable.ic_heart_empty);
+                    Toast.makeText(ProductDetailActivity.this, "Đã bỏ Yêu thích!", Toast.LENGTH_SHORT).show();
+                    // (Tùy chọn: Gọi API xóa khỏi Wishlist nếu bạn đã viết API đó)
+                }
             }
         });
     }

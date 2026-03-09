@@ -37,4 +37,28 @@ public class Product {
     public String getImageUrl() { return imageUrl; }
     public String getModelUrl() { return modelUrl; }
     public double getPrice() { return price; }
+
+    // --- BẮT ĐẦU PHẦN BỔ SUNG CÁC HÀM SETTER ---
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl; // Hoặc this.imageUrl = imageUrl; tuỳ tên biến của bạn
+    }
+
+    public void setModelUrl(String modelUrl) {
+        this.modelUrl = modelUrl;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    // --- KẾT THÚC PHẦN BỔ SUNG ---
 }

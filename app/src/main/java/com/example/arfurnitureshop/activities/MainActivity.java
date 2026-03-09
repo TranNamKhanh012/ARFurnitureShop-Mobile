@@ -117,10 +117,11 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(new Intent(MainActivity.this, CartActivity.class));
                     return true;
                 } else if (itemId == R.id.nav_wishlist) {
-                    Toast.makeText(MainActivity.this, "Mở Wishlist", Toast.LENGTH_SHORT).show();
+                    // Mở trang Danh sách Yêu thích
+                    startActivity(new android.content.Intent(MainActivity.this, com.example.arfurnitureshop.activities.WishlistActivity.class));
                     return true;
                 } else if (itemId == R.id.nav_account) {
-                    Toast.makeText(MainActivity.this, "Mở Tài khoản", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(MainActivity.this, AccountActivity.class));
                     return true;
                 }
                 return false;
@@ -159,7 +160,15 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Lỗi kết nối máy chủ", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-
+        // Cứ mỗi khi màn hình Home hiện lên lại, bắt buộc nó phải làm sáng nút Home
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
+        if (bottomNav != null) {
+            bottomNav.setSelectedItemId(R.id.nav_home);
+        }
     }
 }

@@ -11,6 +11,8 @@ import com.example.arfurnitureshop.adapters.CategoryAdapter;
 import com.example.arfurnitureshop.api.ApiService;
 import com.example.arfurnitureshop.api.RetrofitClient;
 import com.example.arfurnitureshop.models.Category;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -30,34 +32,57 @@ public class AllCategoriesActivity extends AppCompatActivity {
 
         fetchCategories();
 
-        // --- XỬ LÝ THANH MENU FOOTER ---
-        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
-
-        // Làm sáng icon Danh mục
-        bottomNav.setSelectedItemId(R.id.nav_category);
-
-        bottomNav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-            if (itemId == R.id.nav_home) {
-                // Về Trang chủ
-                android.content.Intent intent = new android.content.Intent(AllCategoriesActivity.this, MainActivity.class);
-                intent.setFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP | android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                finish();
-                return true;
-            } else if (itemId == R.id.nav_category) {
-                return true; // Đang ở trang danh mục nên không làm gì cả
-            } else if (itemId == R.id.nav_cart) {
-                // Sang Giỏ hàng
-                startActivity(new android.content.Intent(AllCategoriesActivity.this, CartActivity.class));
-                return true;
-            }
-            return false;
-        });
         // Ánh xạ nút Back và cài đặt sự kiện Click
         android.widget.ImageView ivBack = findViewById(R.id.ivBack);
-        ivBack.setOnClickListener(v -> {
-            finish(); // Lệnh finish() sẽ đóng màn hình hiện tại và tự động trượt về màn hình trước đó
+        ivBack.setOnClickListener(v -> finish()); // Đóng màn hình hiện tại
+
+        // ==========================================
+        // XỬ LÝ THANH ĐIỀU HƯỚNG DƯỚI CÙNG (BOTTOM NAVIGATION)
+        // ==========================================
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
+
+        // 1. Chỉnh cho icon Danh mục sáng lên vì ta đang ở trang này
+        bottomNav.setSelectedItemId(R.id.nav_category);
+
+        // 2. Bắt sự kiện chuyển trang
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+
+            if (itemId == R.id.nav_home) {
+                // Về trang chủ
+                Intent intent = new Intent(AllCategoriesActivity.this, MainActivity.class);
+                startActivity(intent);
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            }
+            else if (itemId == R.id.nav_category) {
+                // Đang ở Danh mục rồi thì đứng im
+                return true;
+            }
+            else if (itemId == R.id.nav_cart) {
+                // Sang Giỏ hàng
+                Intent intent = new Intent(AllCategoriesActivity.this, CartActivity.class);
+                startActivity(intent);
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            }
+            else if (itemId == R.id.nav_wishlist) {
+                // Mở trang Danh sách Yêu thích
+                startActivity(new android.content.Intent(AllCategoriesActivity.this, com.example.arfurnitureshop.activities.WishlistActivity.class));
+                return true;
+            }
+            else if (itemId == R.id.nav_account) {
+                // Sang trang Tài khoản
+                Intent intent = new Intent(AllCategoriesActivity.this, AccountActivity.class);
+                startActivity(intent);
+                overridePendingTransition(0, 0);
+                finish();
+                return true;
+            }
+
+            return false;
         });
     }
 
