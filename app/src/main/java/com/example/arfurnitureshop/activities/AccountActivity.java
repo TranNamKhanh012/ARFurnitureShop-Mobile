@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,39 +18,63 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class AccountActivity extends AppCompatActivity {
 
-    private LinearLayout layoutLoggedOut, layoutLoggedIn;
-    private TextView tvProfileName, tvProfileEmail;
+    private LinearLayout layoutLoggedOut;
+    private View layoutLoggedIn; // ScrollView trong XML mới
+    private TextView tvUserEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_account);
 
-        // Ánh xạ View
+        // ==========================================
+        // 1. ÁNH XẠ VIEW
+        // ==========================================
         layoutLoggedOut = findViewById(R.id.layout_logged_out);
         layoutLoggedIn = findViewById(R.id.layout_logged_in);
-        tvProfileName = findViewById(R.id.tvProfileName);
-        tvProfileEmail = findViewById(R.id.tvProfileEmail);
 
+        // Các view của phần Chưa đăng nhập
         Button btnLoginNow = findViewById(R.id.btnLoginNow);
         Button btnRegisterNow = findViewById(R.id.btnRegisterNow);
-        Button btnLogout = findViewById(R.id.btnLogout);
 
-        // Nút điều hướng
+        // Các view của phần Đã đăng nhập (Minimalist UI)
+        tvUserEmail = findViewById(R.id.tvUserEmail);
+        ImageView ivEditProfile = findViewById(R.id.ivEditProfile);
+        LinearLayout btnMyAddresses = findViewById(R.id.btnMyAddresses);
+        LinearLayout btnOrderHistory = findViewById(R.id.btnOrderHistory);
+        LinearLayout btnSignOut = findViewById(R.id.btnSignOut);
+
+        // ==========================================
+        // 2. SỰ KIỆN CÁC NÚT BẤM
+        // ==========================================
+
+        // Nhóm nút Chưa đăng nhập
         btnLoginNow.setOnClickListener(v -> startActivity(new Intent(AccountActivity.this, LoginActivity.class)));
         btnRegisterNow.setOnClickListener(v -> startActivity(new Intent(AccountActivity.this, RegisterActivity.class)));
 
+        // Nhóm nút Đã đăng nhập
+        ivEditProfile.setOnClickListener(v -> {
+            Toast.makeText(this, "Chuyển đến trang Chỉnh sửa hồ sơ", Toast.LENGTH_SHORT).show();
+        });
+
+        btnMyAddresses.setOnClickListener(v -> {
+            Toast.makeText(this, "Chuyển đến trang Quản lý địa chỉ", Toast.LENGTH_SHORT).show();
+        });
+
+        btnOrderHistory.setOnClickListener(v -> {
+            Toast.makeText(this, "Chuyển đến trang Lịch sử mua hàng", Toast.LENGTH_SHORT).show();
+        });
+
         // Nút Đăng xuất: Xóa bộ nhớ và tự động đẩy về Home
-        btnLogout.setOnClickListener(v -> {
+        btnSignOut.setOnClickListener(v -> {
             SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPreferences.edit();
             editor.clear(); // 1. Xóa sạch dữ liệu đăng nhập
             editor.apply();
 
-            // ==========================================
-            // 2. DỌN SẠCH GIỎ HÀNG NỘI BỘ TRÊN ĐIỆN THOẠI
+            // 2. DỌN SẠCH GIỎ HÀNG VÀ WISHLIST NỘI BỘ TRÊN ĐIỆN THOẠI
             com.example.arfurnitureshop.utils.CartManager.getInstance(AccountActivity.this).clear();
-            // ==========================================
+            com.example.arfurnitureshop.models.WishlistManager.clear();
 
             Toast.makeText(AccountActivity.this, "Đã đăng xuất!", Toast.LENGTH_SHORT).show();
 
@@ -60,82 +85,73 @@ public class AccountActivity extends AppCompatActivity {
             finish();
         });
 
+        // Ánh xạ DrawerLayout và NavigationView mới thêm vào XML
+        androidx.drawerlayout.widget.DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
+        com.google.android.material.navigation.NavigationView navigationView = findViewById(R.id.navigationView);
+        android.widget.ImageView ivMenu = findViewById(R.id.ivMenu);
+
+        // Gọi Trợ lý để xử lý Sidebar
+        com.example.arfurnitureshop.utils.MenuHelper.setupMenu(this, drawerLayout, ivMenu, navigationView);
+
         // ==========================================
-        // XỬ LÝ THANH ĐIỀU HƯỚNG DƯỚI CÙNG (BOTTOM NAVIGATION)
+        // 3. THANH ĐIỀU HƯỚNG DƯỚI CÙNG (BOTTOM NAV)
         // ==========================================
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
-        bottomNav.setSelectedItemId(R.id.nav_account); // Làm sáng icon Tài khoản
+        bottomNav.setSelectedItemId(R.id.nav_account);
 
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
+            if (itemId == bottomNav.getSelectedItemId()) {
+                return true;
+            }
+
+            Intent intent = null;
 
             if (itemId == R.id.nav_home) {
-                // Chuyển về trang chủ
-                Intent intent = new Intent(AccountActivity.this, MainActivity.class);
-                startActivity(intent);
-                overridePendingTransition(0, 0); // Bỏ hiệu ứng giật màn hình
-                finish();
-                return true;
-            }
-            else if (itemId == R.id.nav_category) {
-                // Chuyển sang trang Danh mục
-                Intent intent = new Intent(AccountActivity.this, CategoryProductsActivity.class);
-                startActivity(intent);
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            }
-            else if (itemId == R.id.nav_cart) {
-                // Chuyển sang Giỏ hàng (Bạn nhớ kiểm tra xem id trong menu có đúng là nav_cart không nhé)
-                Intent intent = new Intent(AccountActivity.this, CartActivity.class);
-                startActivity(intent);
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            }
-            // Nếu bạn có thêm nút Wishlist (nav_wishlist) thì mở comment đoạn dưới ra:
-            /*
-            else if (itemId == R.id.nav_wishlist) {
-                Intent intent = new Intent(AccountActivity.this, WishlistActivity.class);
-                startActivity(intent);
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            }
-            */
-            else if (itemId == R.id.nav_account) {
-                // Đang ở trang Tài khoản rồi thì không làm gì cả
-                return true;
+                intent = new Intent(this, MainActivity.class);
+            } else if (itemId == R.id.nav_category) {
+                intent = new Intent(this, AllCategoriesActivity.class);
+            } else if (itemId == R.id.nav_cart) {
+                intent = new Intent(this, CartActivity.class);
+            } else if (itemId == R.id.nav_wishlist) {
+                intent = new Intent(this, WishlistActivity.class);
+            } else if (itemId == R.id.nav_account) {
+                intent = new Intent(this, AccountActivity.class);
             }
 
-            return false;
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                startActivity(intent);
+                overridePendingTransition(0, 0);
+                finish();
+            }
+            return true;
         });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        checkLoginState(); // Mỗi lần mở lại trang Tài khoản thì kiểm tra xem đã đăng nhập chưa
+        checkLoginState();
     }
 
-    // Hàm kiểm tra và đổi giao diện
+    // ==========================================
+    // 4. HÀM KIỂM TRA VÀ ĐỔI GIAO DIỆN
+    // ==========================================
     private void checkLoginState() {
         SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
         boolean isLoggedIn = sharedPreferences.getBoolean("IS_LOGGED_IN", false);
 
         if (isLoggedIn) {
-            // Đã đăng nhập: Hiện phần 2, ẩn phần 1
+            // Đã đăng nhập: Hiện giao diện mới, ẩn nút Login
             layoutLoggedOut.setVisibility(View.GONE);
             layoutLoggedIn.setVisibility(View.VISIBLE);
 
-            // Lấy dữ liệu từ bộ nhớ điền vào TextView
-            String fullName = sharedPreferences.getString("FULL_NAME", "Khách hàng");
-            String username = sharedPreferences.getString("USERNAME", "");
-
-            tvProfileName.setText(fullName);
-            tvProfileEmail.setText(username);
+            // Lấy Email/Username từ bộ nhớ để hiển thị lên giao diện mới
+            String username = sharedPreferences.getString("USERNAME", "Người dùng");
+            tvUserEmail.setText(username);
         } else {
-            // Chưa đăng nhập: Hiện phần 1, ẩn phần 2
+            // Chưa đăng nhập: Hiện nút Login, ẩn giao diện thông tin
             layoutLoggedOut.setVisibility(View.VISIBLE);
             layoutLoggedIn.setVisibility(View.GONE);
         }

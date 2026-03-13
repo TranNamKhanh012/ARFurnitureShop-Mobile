@@ -7,13 +7,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.arfurnitureshop.R;
 import com.example.arfurnitureshop.adapters.ProductAdapter;
 import com.example.arfurnitureshop.models.WishlistManager;
+import com.example.arfurnitureshop.utils.MenuHelper; // <--- Import Trợ lý
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 
 public class WishlistActivity extends AppCompatActivity {
 
@@ -27,14 +30,10 @@ public class WishlistActivity extends AppCompatActivity {
         setContentView(R.layout.activity_wishlist);
 
         // 1. Ánh xạ View
-        ImageView ivBack = findViewById(R.id.ivBack);
         rvWishlist = findViewById(R.id.rvWishlist);
         tvEmptyWishlist = findViewById(R.id.tvEmptyWishlist);
 
-        // 2. Xử lý Nút Back
-        ivBack.setOnClickListener(v -> finish());
-
-        // 3. Thiết lập RecyclerView hiển thị 2 cột
+        // 2. Thiết lập RecyclerView hiển thị 2 cột
         rvWishlist.setLayoutManager(new GridLayoutManager(this, 2));
 
         // Truyền thẳng danh sách từ WishlistManager vào Adapter
@@ -45,60 +44,62 @@ public class WishlistActivity extends AppCompatActivity {
         checkEmptyList();
 
         // ==========================================
-        // 4. XỬ LÝ THANH MENU FOOTER (BOTTOM NAVIGATION)
+        // GỌI TRỢ LÝ MENU RA LÀM VIỆC (CHỈ 3 DÒNG CODE)
+        // ==========================================
+        DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
+        NavigationView navigationView = findViewById(R.id.navigationView);
+        ImageView ivMenu = findViewById(R.id.ivMenu);
+
+        // Giao toàn bộ việc đóng/mở menu cho MenuHelper xử lý
+        MenuHelper.setupMenu(this, drawerLayout, ivMenu, navigationView);
+
+        // ==========================================
+        // THANH ĐIỀU HƯỚNG DƯỚI CÙNG
         // ==========================================
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
 
-        // Bật sáng icon Wishlist (Trái tim) để báo cho user biết đang ở trang này
         bottomNav.setSelectedItemId(R.id.nav_wishlist);
 
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
+            if (itemId == bottomNav.getSelectedItemId()) {
+                return true;
+            }
+
+            Intent intent = null;
+
             if (itemId == R.id.nav_home) {
-                // Về Trang chủ (Dùng cờ để dọn dẹp các màn hình đè lên nhau)
-                Intent intent = new Intent(WishlistActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                startActivity(intent);
-                finish();
-                return true;
-
+                intent = new Intent(this, MainActivity.class);
             } else if (itemId == R.id.nav_category) {
-                // Sang trang Danh mục
-                startActivity(new Intent(WishlistActivity.this, AllCategoriesActivity.class));
-                finish(); // Đóng trang hiện tại cho nhẹ máy
-                return true;
-
+                intent = new Intent(this, AllCategoriesActivity.class);
             } else if (itemId == R.id.nav_cart) {
-                // Sang trang Giỏ hàng
-                startActivity(new Intent(WishlistActivity.this, CartActivity.class));
-                finish();
-                return true;
+                intent = new Intent(this, CartActivity.class);
+            } else if (itemId == R.id.nav_wishlist) {
+                intent = new Intent(this, WishlistActivity.class);
+            } else if (itemId == R.id.nav_account) {
+                intent = new Intent(this, AccountActivity.class);
+            }
 
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                startActivity(intent);
+                overridePendingTransition(0, 0);
+                finish();
             }
-            else if (itemId == R.id.nav_account) {
-                startActivity(new Intent(WishlistActivity.this, AccountActivity.class));
-                return true;
-            }else if (itemId == R.id.nav_wishlist) {
-                // Đang ở trang Wishlist rồi thì không làm gì cả
-                return true;
-            }
-            return false;
+            return true;
         });
     }
 
-    // Hàm này chạy mỗi khi màn hình Wishlist được mở lại (Resume)
     @Override
     protected void onResume() {
         super.onResume();
-        // Báo cho Adapter biết dữ liệu có thể đã thay đổi (nếu user vừa thả/bỏ tim ở màn hình khác)
         if (productAdapter != null) {
             productAdapter.notifyDataSetChanged();
         }
         checkEmptyList();
     }
 
-    // Hàm kiểm tra ẩn/hiện danh sách
     private void checkEmptyList() {
         if (WishlistManager.wishlistProducts.isEmpty()) {
             rvWishlist.setVisibility(View.GONE);

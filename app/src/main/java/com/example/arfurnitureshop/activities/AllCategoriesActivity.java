@@ -2,8 +2,10 @@ package com.example.arfurnitureshop.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.arfurnitureshop.R;
@@ -11,7 +13,9 @@ import com.example.arfurnitureshop.adapters.CategoryAdapter;
 import com.example.arfurnitureshop.api.ApiService;
 import com.example.arfurnitureshop.api.RetrofitClient;
 import com.example.arfurnitureshop.models.Category;
+import com.example.arfurnitureshop.utils.MenuHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.navigation.NavigationView;
 
 import java.util.List;
 import retrofit2.Call;
@@ -32,57 +36,63 @@ public class AllCategoriesActivity extends AppCompatActivity {
 
         fetchCategories();
 
-        // Ánh xạ nút Back và cài đặt sự kiện Click
-        android.widget.ImageView ivBack = findViewById(R.id.ivBack);
-        ivBack.setOnClickListener(v -> finish()); // Đóng màn hình hiện tại
-
         // ==========================================
-        // XỬ LÝ THANH ĐIỀU HƯỚNG DƯỚI CÙNG (BOTTOM NAVIGATION)
+        // GỌI TRỢ LÝ MENU RA LÀM VIỆC (CHỈ 3 DÒNG CODE)
+        // ==========================================
+        DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
+        NavigationView navigationView = findViewById(R.id.navigationView);
+        ImageView ivMenu = findViewById(R.id.ivMenu);
+
+        // Giao toàn bộ việc đóng/mở menu cho MenuHelper xử lý
+        MenuHelper.setupMenu(this, drawerLayout, ivMenu, navigationView);
+
+
+        // Ánh xạ nút Back và cài đặt sự kiện Click
+        // ==========================================
+        // THANH ĐIỀU HƯỚNG DƯỚI CÙNG (CHUYỂN TRANG SIÊU MƯỢT, KHÔNG CHỚP NHÁY)
         // ==========================================
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
 
-        // 1. Chỉnh cho icon Danh mục sáng lên vì ta đang ở trang này
+        // [QUAN TRỌNG] TÙY CHỈNH CHO TỪNG TRANG:
+        // Ở trang nào thì bạn đổi ID thành icon của trang đó nhé!
+        // (Ví dụ: Trang chủ -> R.id.nav_home | Giỏ hàng -> R.id.nav_cart | Tài khoản -> R.id.nav_account)
         bottomNav.setSelectedItemId(R.id.nav_category);
 
-        // 2. Bắt sự kiện chuyển trang
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
 
-            if (itemId == R.id.nav_home) {
-                // Về trang chủ
-                Intent intent = new Intent(AllCategoriesActivity.this, MainActivity.class);
-                startActivity(intent);
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            }
-            else if (itemId == R.id.nav_category) {
-                // Đang ở Danh mục rồi thì đứng im
-                return true;
-            }
-            else if (itemId == R.id.nav_cart) {
-                // Sang Giỏ hàng
-                Intent intent = new Intent(AllCategoriesActivity.this, CartActivity.class);
-                startActivity(intent);
-                overridePendingTransition(0, 0);
-                finish();
-                return true;
-            }
-            else if (itemId == R.id.nav_wishlist) {
-                // Mở trang Danh sách Yêu thích
-                startActivity(new android.content.Intent(AllCategoriesActivity.this, com.example.arfurnitureshop.activities.WishlistActivity.class));
-                return true;
-            }
-            else if (itemId == R.id.nav_account) {
-                // Sang trang Tài khoản
-                Intent intent = new Intent(AllCategoriesActivity.this, AccountActivity.class);
-                startActivity(intent);
-                overridePendingTransition(0, 0);
-                finish();
+            // Nếu người dùng bấm lại vào chính cái tab đang xem -> Đứng im, không load lại trang
+            if (itemId == bottomNav.getSelectedItemId()) {
                 return true;
             }
 
-            return false;
+            Intent intent = null;
+
+            if (itemId == R.id.nav_home) {
+                intent = new Intent(this, MainActivity.class);
+            } else if (itemId == R.id.nav_category) {
+                // Nhớ đổi tên file ở đây nếu trang danh mục của bạn tên là CategoryProductsActivity nhé
+                intent = new Intent(this, AllCategoriesActivity.class);
+            } else if (itemId == R.id.nav_cart) {
+                intent = new Intent(this, CartActivity.class);
+            } else if (itemId == R.id.nav_wishlist) {
+                intent = new Intent(this, WishlistActivity.class);
+            } else if (itemId == R.id.nav_account) {
+                intent = new Intent(this, AccountActivity.class);
+            }
+
+            if (intent != null) {
+                // 1. Tắt hiệu ứng tạo màn hình mới
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                startActivity(intent);
+
+                // 2. Tắt triệt để hiệu ứng trượt/nhảy của Android
+                overridePendingTransition(0, 0);
+
+                // 3. Đóng trang cũ để giải phóng RAM cho điện thoại
+                finish();
+            }
+            return true;
         });
     }
 

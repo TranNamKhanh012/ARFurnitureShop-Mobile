@@ -1,43 +1,40 @@
-package com.example.arfurnitureshop.models; // Sửa lại package cho đúng với project của bạn
+package com.example.arfurnitureshop.models;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class WishlistManager {
-    // Danh sách static này sẽ tồn tại suốt vòng đời của App
     public static List<Product> wishlistProducts = new ArrayList<>();
 
-    // Thêm sản phẩm vào Wishlist (Chỉ thêm nếu chưa có)
-    public static void addToWishlist(Product product) {
-        boolean exists = false;
+    // 1. Kiểm tra xem sản phẩm đã thả tim chưa
+    public static boolean isFavorite(int productId) {
         for (Product p : wishlistProducts) {
-            if (p.getId() == product.getId()) {
-                exists = true;
-                break;
-            }
+            if (p.getId() == productId) return true;
         }
-        if (!exists) {
+        return false;
+    }
+
+    // 2. Thêm vào danh sách thả tim
+    public static void add(Product product) {
+        if (!isFavorite(product.getId())) {
             wishlistProducts.add(product);
         }
     }
 
-    // Xóa sản phẩm khỏi Wishlist
-    public static void removeFromWishlist(Product product) {
+    // 3. XÓA khỏi danh sách thả tim (Dựa vào ID)
+    public static void remove(int productId) {
         for (int i = 0; i < wishlistProducts.size(); i++) {
-            if (wishlistProducts.get(i).getId() == product.getId()) {
+            if (wishlistProducts.get(i).getId() == productId) {
                 wishlistProducts.remove(i);
                 break;
             }
         }
     }
 
-    // Kiểm tra xem sản phẩm đã có trong Wishlist chưa
-    public static boolean isFavorite(int productId) {
-        for (Product p : wishlistProducts) {
-            if (p.getId() == productId) {
-                return true;
-            }
+    // 4. Dọn sạch khi Đăng xuất
+    public static void clear() {
+        if (wishlistProducts != null) {
+            wishlistProducts.clear();
         }
-        return false;
     }
 }

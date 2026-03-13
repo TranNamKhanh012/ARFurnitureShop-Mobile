@@ -1,5 +1,6 @@
 package com.example.arfurnitureshop.api;
 
+import com.example.arfurnitureshop.models.CartItem;
 import com.example.arfurnitureshop.models.Category;
 import com.example.arfurnitureshop.models.Product;
 import com.google.gson.Gson;
@@ -26,7 +27,7 @@ public interface ApiService {
     // LƯU Ý QUAN TRỌNG: Bạn nhớ thay cái baseUrl bằng link API thật của bạn nhé!
     // Ví dụ đang chạy C# ở máy ảo: http://10.0.2.2:5000/
     ApiService apiService = new Retrofit.Builder()
-            .baseUrl("http://192.168.1.176:5103/") // <-- SỬA PORT Ở ĐÂY CHO ĐÚNG VỚI VISUAL STUDIO CỦA BẠN
+            .baseUrl("http://192.168.1.184:5103/") // <-- SỬA PORT Ở ĐÂY CHO ĐÚNG VỚI VISUAL STUDIO CỦA BẠN
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(ApiService.class);
@@ -53,8 +54,9 @@ public interface ApiService {
     @DELETE("api/Wishlist/{userId}/{productId}")
     Call<Void> removeFromWishlist(@Path("userId") int userId, @Path("productId") int productId);
 
+    // Lấy giỏ hàng phải dùng List<CartItem> (để hứng được cả Số lượng)
     @GET("api/Cart/{userId}")
-    Call<List<Product>> getCart(@Path("userId") int userId);
+    Call<List<com.example.arfurnitureshop.models.CartItem>> getCart(@Path("userId") int userId);
     @POST("api/Cart/{userId}/{productId}")
     Call<Void> addToCart(@Path("userId") int userId, @Path("productId") int productId);
 

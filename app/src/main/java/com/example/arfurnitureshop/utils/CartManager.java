@@ -43,9 +43,11 @@ public class CartManager {
         return total;
     }
     public void clear() {
-        if (this.getItems() != null) {
-            this.getItems().clear(); // Xóa sạch toàn bộ sản phẩm trong kho tạm
+        // Gọi thẳng lệnh xóa DB thay vì xóa cái list tạm
+        if (dbHelper != null) {
+            dbHelper.clearCart();
         }
+
     }
 
 }

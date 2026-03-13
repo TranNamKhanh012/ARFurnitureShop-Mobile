@@ -15,6 +15,7 @@ import com.example.arfurnitureshop.api.ApiService;
 import com.example.arfurnitureshop.api.RetrofitClient;
 import com.example.arfurnitureshop.models.Product;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -61,8 +62,28 @@ public class AllProductsActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    // Tái sử dụng lại ProductAdapter cũ, nó sẽ tự động đổ dữ liệu vào Grid
-                    ProductAdapter adapter = new ProductAdapter(response.body());
+                    List<Product> fullList = response.body();
+                    List<Product> displayList = new ArrayList<>();
+
+                    // --- BẮT TÍN HIỆU TỪ TRANG CHỦ ---
+                    // Lấy cờ báo hiệu xem có phải đang mở từ mục Best Sellers (Giảm giá) không
+                    boolean showOnlyDiscount = getIntent().getBooleanExtra("SHOW_ONLY_DISCOUNT", false);
+
+                    // KIỂM TRA LỌC DỮ LIỆU
+                    if (showOnlyDiscount) {
+                        // Nếu cờ là true -> Chỉ nhặt những món có Discount > 0
+                        for (Product p : fullList) {
+                            if (p.getDiscount() > 0) {
+                                displayList.add(p);
+                            }
+                        }
+                    } else {
+                        // Nếu cờ là false -> Không lọc, bê nguyên toàn bộ vào
+                        displayList.addAll(fullList);
+                    }
+
+                    // Tái sử dụng lại ProductAdapter cũ với danh sách đã được lọc
+                    ProductAdapter adapter = new ProductAdapter(displayList);
                     rvAllProductsVertical.setAdapter(adapter);
                 }
             }

@@ -51,7 +51,7 @@ public class CartDatabaseHelper extends SQLiteOpenHelper {
         if (c.moveToFirst()) {
             do {
                 // Khởi tạo Product từ SQLite (cần có Constructor 5 tham số trong Product.java)
-                Product p = new Product(c.getInt(0), c.getString(1), c.getString(3), "", c.getDouble(2));
+                Product p = new Product(c.getInt(0), c.getString(1), c.getString(3), "", c.getDouble(2), 0, 5.0);
                 list.add(new CartItem(p, c.getInt(4)));
             } while (c.moveToNext());
         }
@@ -64,6 +64,12 @@ public class CartDatabaseHelper extends SQLiteOpenHelper {
     public void deleteItem(int id) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete("cart", "id=?", new String[]{String.valueOf(id)});
+        db.close();
+    }
+    // Hàm dọn sạch toàn bộ giỏ hàng trong SQLite
+    public void clearCart() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM cart"); // Xóa toàn bộ dữ liệu trong bảng cart
         db.close();
     }
 }

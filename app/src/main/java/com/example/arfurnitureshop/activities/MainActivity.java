@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         // --- 1. ÁNH XẠ TOÀN BỘ VIEW TRƯỚC TIÊN ---
         rvBestSellers = findViewById(R.id.rvBestSellers);
         rvAllProducts = findViewById(R.id.rvAllProducts);
-        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
+        // (Đã xóa dòng khai báo bottomNav thừa ở đây)
 
         TextView tvSeeAllBestSellers = findViewById(R.id.tvSeeAllBestSellers);
         TextView tvSeeAllProducts = findViewById(R.id.tvSeeAllProducts);
@@ -50,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
         NavigationView navigationView = findViewById(R.id.navigationView);
 
         // --- 2. CẤU HÌNH RECYCLERVIEW ---
-        // Bắt buộc phải cấu hình LayoutManager trước khi gọi API
         if (rvBestSellers != null && rvAllProducts != null) {
             rvBestSellers.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
             rvAllProducts.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
@@ -79,14 +78,20 @@ public class MainActivity extends AppCompatActivity {
             tvSeeAllBestSellers.setOnClickListener(v -> {
                 Intent intent = new Intent(MainActivity.this, AllProductsActivity.class);
                 intent.putExtra("PAGE_TITLE", "Best Sellers");
+
+                // NÉM THÊM 1 CÁI CỜ BÁO HIỆU SANG TRANG BÊN KIA:
+                intent.putExtra("SHOW_ONLY_DISCOUNT", true);
+
                 startActivity(intent);
             });
         }
 
+        // Nút See All của All Products thì giữ nguyên (không lọc)
         if (tvSeeAllProducts != null) {
             tvSeeAllProducts.setOnClickListener(v -> {
                 Intent intent = new Intent(MainActivity.this, AllProductsActivity.class);
                 intent.putExtra("PAGE_TITLE", "All Products");
+                // Không truyền cờ lọc vào đây
                 startActivity(intent);
             });
         }
@@ -104,35 +109,53 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // --- 6. XỬ LÝ THANH ĐIỀU HƯỚNG DƯỚI CÙNG (BOTTOM NAV) ---
-        if (bottomNav != null) {
-            bottomNav.setOnItemSelectedListener(item -> {
-                int itemId = item.getItemId();
-                if (itemId == R.id.nav_home) {
-                    return true;
-                } else if (itemId == R.id.nav_category) {
-                    Intent intent = new Intent(MainActivity.this, AllCategoriesActivity.class);
-                    startActivity(intent);
-                    return true;
-                } else if (itemId == R.id.nav_cart) {
-                    startActivity(new Intent(MainActivity.this, CartActivity.class));
-                    return true;
-                } else if (itemId == R.id.nav_wishlist) {
-                    // Mở trang Danh sách Yêu thích
-                    startActivity(new android.content.Intent(MainActivity.this, com.example.arfurnitureshop.activities.WishlistActivity.class));
-                    return true;
-                } else if (itemId == R.id.nav_account) {
-                    startActivity(new Intent(MainActivity.this, AccountActivity.class));
-                    return true;
-                }
-                return false;
-            });
-        }
+        // ==========================================
+        // THANH ĐIỀU HƯỚNG DƯỚI CÙNG (CHUYỂN TRANG SIÊU MƯỢT, KHÔNG CHỚP NHÁY)
+        // ==========================================
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
+        bottomNav.setSelectedItemId(R.id.nav_home);
+
+        bottomNav.setOnItemSelectedListener(item -> {
+            int itemId = item.getItemId();
+
+            // Nếu người dùng bấm lại vào chính cái tab đang xem -> Đứng im, không load lại trang
+            if (itemId == bottomNav.getSelectedItemId()) {
+                return true;
+            }
+
+            Intent intent = null;
+
+            if (itemId == R.id.nav_home) {
+                intent = new Intent(this, MainActivity.class);
+            } else if (itemId == R.id.nav_category) {
+                intent = new Intent(this, AllCategoriesActivity.class);
+            } else if (itemId == R.id.nav_cart) {
+                intent = new Intent(this, CartActivity.class);
+            } else if (itemId == R.id.nav_wishlist) {
+                intent = new Intent(this, WishlistActivity.class);
+            } else if (itemId == R.id.nav_account) {
+                intent = new Intent(this, AccountActivity.class);
+            }
+
+            if (intent != null) {
+                // 1. Tắt hiệu ứng tạo màn hình mới
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                startActivity(intent);
+
+                // 2. Tắt triệt để hiệu ứng trượt/nhảy của Android
+                overridePendingTransition(0, 0);
+
+                // 3. Đóng trang cũ để giải phóng RAM cho điện thoại
+                finish();
+            }
+            return true;
+        });
 
         // --- 7. GỌI API NẠP DỮ LIỆU ---
-        // Lệnh này phải để sau cùng, khi tất cả View đã được ánh xạ xong
         fetchProductsFromApi();
     }
 
+    // ================= HÀM LẤY DỮ LIỆU TỪ BACKEND =================
     // ================= HÀM LẤY DỮ LIỆU TỪ BACKEND =================
     private void fetchProductsFromApi() {
         RetrofitClient.getClient().create(ApiService.class).getProducts().enqueue(new Callback<List<Product>>() {
@@ -141,14 +164,35 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Product> fullList = response.body();
 
-                    // Cắt 6 sản phẩm (Bọc thêm new ArrayList)
-                    int limit = Math.min(fullList.size(), 6);
-                    List<Product> limitedList = new java.util.ArrayList<>(fullList.subList(0, limit));
+                    // ----------------------------------------------------
+                    // 1. TẠO DANH SÁCH RIÊNG CHO BEST SELLERS (CHỈ LẤY HÀNG GIẢM GIÁ)
+                    // ----------------------------------------------------
+                    List<Product> discountedProducts = new java.util.ArrayList<>();
+                    for (Product p : fullList) {
+                        if (p.getDiscount() > 0) {
+                            discountedProducts.add(p);
+                        }
+                    }
 
-                    // Nạp dữ liệu vào (Đã check null để tránh lỗi)
-                    productAdapter = new ProductAdapter(limitedList);
-                    if (rvBestSellers != null) rvBestSellers.setAdapter(productAdapter);
+                    // Cắt lấy tối đa 6 sản phẩm giảm giá
+                    int limitDiscount = Math.min(discountedProducts.size(), 6);
+                    List<Product> finalBestSellers = new java.util.ArrayList<>(discountedProducts.subList(0, limitDiscount));
+
+                    // Nạp vào thanh trượt Best Sellers
+                    ProductAdapter bestSellersAdapter = new ProductAdapter(finalBestSellers);
+                    if (rvBestSellers != null) rvBestSellers.setAdapter(bestSellersAdapter);
+
+                    // ----------------------------------------------------
+                    // 2. TẠO DANH SÁCH CHO ALL PRODUCTS (Lấy tất cả bình thường)
+                    // ----------------------------------------------------
+                    // Cắt lấy tối đa 6 sản phẩm mới nhất
+                    int limitAll = Math.min(fullList.size(), 6);
+                    List<Product> finalAllProducts = new java.util.ArrayList<>(fullList.subList(0, limitAll));
+
+                    // Nạp vào thanh trượt All Products
+                    productAdapter = new ProductAdapter(finalAllProducts);
                     if (rvAllProducts != null) rvAllProducts.setAdapter(productAdapter);
+
                 } else {
                     Toast.makeText(MainActivity.this, "Lỗi API: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
@@ -161,14 +205,65 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    // =========================================================
+    // 1. TỰ ĐỘNG KÉO DỮ LIỆU MỖI KHI MỞ TRANG CHỦ LÊN
+    // =========================================================
     @Override
     protected void onResume() {
         super.onResume();
 
-        // Cứ mỗi khi màn hình Home hiện lên lại, bắt buộc nó phải làm sáng nút Home
-        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
-        if (bottomNav != null) {
-            bottomNav.setSelectedItemId(R.id.nav_home);
+        // 1. Kéo dữ liệu ngầm từ C# về
+        syncDataFromServer();
+
+        // 2. CẬP NHẬT GIAO DIỆN TIM NGAY LẬP TỨC TỪ KHO LƯU TRỮ RAM
+        if (productAdapter != null) {
+            productAdapter.notifyDataSetChanged();
+        }
+    }
+
+    // =========================================================
+    // 2. HÀM ĐỒNG BỘ DỮ LIỆU TỪ SERVER C# VỀ ĐIỆN THOẠI
+    // =========================================================
+    private void syncDataFromServer() {
+        android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        int userId = prefs.getInt("USER_ID", -1);
+
+        if (userId != -1) {
+            // 1. Kéo Wishlist từ C# về
+            com.example.arfurnitureshop.api.ApiService.apiService.getWishlist(userId).enqueue(new retrofit2.Callback<java.util.List<com.example.arfurnitureshop.models.Product>>() {
+                @Override
+                public void onResponse(retrofit2.Call<java.util.List<com.example.arfurnitureshop.models.Product>> call, retrofit2.Response<java.util.List<com.example.arfurnitureshop.models.Product>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        com.example.arfurnitureshop.models.WishlistManager.clear();
+                        com.example.arfurnitureshop.models.WishlistManager.wishlistProducts.addAll(response.body());
+                    }
+                }
+                @Override
+                public void onFailure(retrofit2.Call<java.util.List<com.example.arfurnitureshop.models.Product>> call, Throwable t) {}
+            });
+
+            // 2. Kéo Giỏ hàng từ C# về
+            com.example.arfurnitureshop.api.ApiService.apiService.getCart(userId).enqueue(new retrofit2.Callback<java.util.List<com.example.arfurnitureshop.models.CartItem>>() {
+                @Override
+                public void onResponse(retrofit2.Call<java.util.List<com.example.arfurnitureshop.models.CartItem>> call, retrofit2.Response<java.util.List<com.example.arfurnitureshop.models.CartItem>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        // Xóa sạch giỏ hàng cũ ở điện thoại
+                        com.example.arfurnitureshop.utils.CartManager.getInstance(MainActivity.this).clear();
+
+                        // Lặp qua từng món Server gửi về và lưu vào SQLite để hiển thị
+                        for (com.example.arfurnitureshop.models.CartItem item : response.body()) {
+                            com.example.arfurnitureshop.utils.CartManager.getInstance(MainActivity.this).add(item);
+                        }
+                    }
+                }
+                @Override
+                public void onFailure(retrofit2.Call<java.util.List<com.example.arfurnitureshop.models.CartItem>> call, Throwable t) {}
+            });
+        } else {
+            // Nếu phát hiện chưa đăng nhập, tự động quét sạch kho nội bộ
+            com.example.arfurnitureshop.utils.CartManager.getInstance(this).clear();
+            com.example.arfurnitureshop.models.WishlistManager.clear();
         }
     }
 }
