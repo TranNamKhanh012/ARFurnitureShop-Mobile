@@ -24,7 +24,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="Product Details"
+            android:text="Chi tiết sản phẩm"
             android:textColor="#333"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -108,7 +108,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="₫ 2,000,000 VND"
+
                     android:textColor="#D32F2F"
                     android:textSize="18sp"
                     android:textStyle="bold" />

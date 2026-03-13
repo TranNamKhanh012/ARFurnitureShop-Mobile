@@ -42,9 +42,13 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     // Trong build.gradle.kts, sửa lại chính xác như sau:
-    implementation("io.github.sceneview:arsceneview:0.10.0")
+    implementation("com.google.ar:core:1.31.0")
+    implementation("com.gorisse.thomas.sceneform:sceneform:1.21.0")
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
+    // Thêm thư viện Sceneform nâng cấp (Hỗ trợ quét khuôn mặt cực tốt)
+    implementation("com.gorisse.thomas.sceneform:sceneform:1.21.0")
+
 }

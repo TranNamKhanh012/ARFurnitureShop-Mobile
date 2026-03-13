@@ -64,7 +64,9 @@ public class MainActivity extends AppCompatActivity {
             navigationView.setNavigationItemSelectedListener(item -> {
                 int id = item.getItemId();
                 if (id == R.id.nav_profile) {
-                    Toast.makeText(MainActivity.this, "My Profile", Toast.LENGTH_SHORT).show();
+                    // Mở màn hình Profile khi bấm vào "My Profile"
+                    Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+                    startActivity(intent);
                 } else if (id == R.id.nav_setting) {
                     Toast.makeText(MainActivity.this, "Settings", Toast.LENGTH_SHORT).show();
                 }
@@ -100,9 +102,9 @@ public class MainActivity extends AppCompatActivity {
         androidx.viewpager2.widget.ViewPager2 viewPagerBanner = findViewById(R.id.viewPagerBanner);
         if (viewPagerBanner != null) {
             java.util.List<String> bannerImages = new java.util.ArrayList<>();
-            bannerImages.add("https://images.unsplash.com/photo-1618220179428-22790b461013?q=80&w=1000&auto=format&fit=crop");
-            bannerImages.add("https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1000&auto=format&fit=crop");
-            bannerImages.add("https://images.unsplash.com/photo-1586023492125-27b2c045efd7?q=80&w=1000&auto=format&fit=crop");
+            bannerImages.add("https://images.unsplash.com/photo-1511499767150-a48a237f0083?q=80&w=1000&auto=format&fit=crop");
+            bannerImages.add("https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=1000&auto=format&fit=crop");
+            bannerImages.add("https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop");
 
             com.example.arfurnitureshop.adapters.BannerAdapter bannerAdapter = new com.example.arfurnitureshop.adapters.BannerAdapter(bannerImages);
             viewPagerBanner.setAdapter(bannerAdapter);

@@ -182,23 +182,10 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
         fabArView.setOnClickListener(v -> {
-            String finalModelUrl = currentProduct.getModelUrl();
-            if (finalModelUrl == null || finalModelUrl.trim().isEmpty()) {
-                Toast.makeText(this, "Sản phẩm này chưa có mô hình 3D!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Intent sceneViewerIntent = new Intent(Intent.ACTION_VIEW);
-            Uri intentUri = Uri.parse("https://arvr.google.com/scene-viewer/1.0").buildUpon()
-                    .appendQueryParameter("file", finalModelUrl)
-                    .appendQueryParameter("mode", "ar_only")
-                    .appendQueryParameter("title", currentProduct.getName())
-                    .build();
-            sceneViewerIntent.setData(intentUri);
-            sceneViewerIntent.setPackage("com.google.ar.core");
-            try { startActivity(sceneViewerIntent); }
-            catch (android.content.ActivityNotFoundException e) {
-                Toast.makeText(this, "Điện thoại của bạn chưa cài đặt ARCore!", Toast.LENGTH_LONG).show();
-            }
+            // Tạm thời bỏ qua logic kiểm tra mặt hàng
+            // Ép nút này chuyển thẳng sang trang Camera Face AR để Test
+            Intent intent = new Intent(ProductDetailActivity.this, FaceArActivity.class);
+            startActivity(intent);
         });
     }
 

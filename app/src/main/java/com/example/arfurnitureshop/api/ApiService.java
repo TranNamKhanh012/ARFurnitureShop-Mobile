@@ -3,6 +3,7 @@ package com.example.arfurnitureshop.api;
 import com.example.arfurnitureshop.models.CartItem;
 import com.example.arfurnitureshop.models.Category;
 import com.example.arfurnitureshop.models.Product;
+import com.example.arfurnitureshop.models.UserProfile;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -10,9 +11,12 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface ApiService {
@@ -74,5 +78,11 @@ public interface ApiService {
     @POST("api/Auth/login")
     Call<com.example.arfurnitureshop.models.User> login(@retrofit2.http.Body com.example.arfurnitureshop.models.LoginRequest request);
 
+    // Lấy thông tin user
+    @GET("api/user/profile")
+    Call<UserProfile> getProfile(@Header("Authorization") String token);
 
+    // Cập nhật thông tin user
+    @PUT("api/user/update")
+    Call<UserProfile> updateProfile(@Header("Authorization") String token, @Body UserProfile user);
 }

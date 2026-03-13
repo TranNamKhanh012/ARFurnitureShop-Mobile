@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature android:name="android.hardware.camera.ar" android:required="true" />
+    <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -40,6 +41,12 @@
         <activity android:name=".activities.AccountActivity" />
         <activity android:name=".activities.LoginActivity" />
         <activity android:name=".activities.RegisterActivity" />
+        <activity android:name=".activities.FaceArActivity" />
+        <activity android:name=".activities.AboutUsActivity" />
+        <activity android:name=".activities.ContactUsActivity" />
+        <activity android:name=".activities.ProfileActivity" />
+
+
     </application>
 
 </manifest>
