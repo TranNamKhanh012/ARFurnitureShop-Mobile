@@ -1,6 +1,7 @@
 package com.example.arfurnitureshop.utils;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -8,6 +9,9 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.arfurnitureshop.R;
+import com.example.arfurnitureshop.activities.AboutUsActivity;
+import com.example.arfurnitureshop.activities.MainActivity;
+import com.example.arfurnitureshop.activities.ProfileActivity;
 import com.google.android.material.navigation.NavigationView;
 
 public class MenuHelper {
@@ -26,12 +30,24 @@ public class MenuHelper {
                 int id = item.getItemId();
 
                 if (id == R.id.nav_profile) {
-                    Toast.makeText(activity, "My Profile", Toast.LENGTH_SHORT).show();
-                    // Nếu muốn chuyển trang thì dùng: activity.startActivity(new Intent(activity, AccountActivity.class));
-                } else if (id == R.id.nav_setting) {
+                    // ĐÃ SỬA: Lệnh mở trang ProfileActivity
+                    Intent intent = new Intent(activity, ProfileActivity.class);
+                    activity.startActivity(intent);
+                }
+                else if (id == R.id.nav_home) {
+                    // ĐÃ THÊM: Lệnh mở trang Home (Trang chủ)
+                    Intent intent = new Intent(activity, MainActivity.class);
+                    // Xóa các trang cũ để đỡ nặng máy khi về Home
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    activity.startActivity(intent);
+                }
+                else if (id == R.id.nav_about) { // Kiểm tra lại ID này trong drawer_menu.xml của bạn nhé (có thể là nav_about_us)
+                    Intent intent = new Intent(activity, AboutUsActivity.class);
+                    activity.startActivity(intent);
+                }
+                else if (id == R.id.nav_setting) {
                     Toast.makeText(activity, "Settings", Toast.LENGTH_SHORT).show();
                 }
-                // Thêm các nút About Us, Contact Us... ở đây
 
                 // Đóng menu sau khi bấm xong
                 drawerLayout.closeDrawer(GravityCompat.START);

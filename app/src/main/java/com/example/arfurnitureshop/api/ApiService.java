@@ -78,11 +78,11 @@ public interface ApiService {
     @POST("api/Auth/login")
     Call<com.example.arfurnitureshop.models.User> login(@retrofit2.http.Body com.example.arfurnitureshop.models.LoginRequest request);
 
-    // Lấy thông tin user
-    @GET("api/user/profile")
-    Call<UserProfile> getProfile(@Header("Authorization") String token);
+    // Lấy thông tin user bằng ID
+    @GET("api/Auth/profile/{id}")
+    Call<UserProfile> getProfile(@Path("id") int userId);
 
-    // Cập nhật thông tin user
-    @PUT("api/user/update")
-    Call<UserProfile> updateProfile(@Header("Authorization") String token, @Body UserProfile user);
+    // Cập nhật thông tin user bằng ID
+    @PUT("api/Auth/update/{id}")
+    Call<UserProfile> updateProfile(@Path("id") int userId, @Body UserProfile user);
 }
