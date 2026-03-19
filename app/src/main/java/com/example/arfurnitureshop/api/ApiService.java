@@ -18,6 +18,7 @@ import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
 
@@ -85,4 +86,25 @@ public interface ApiService {
     // Cập nhật thông tin user bằng ID
     @PUT("api/Auth/update/{id}")
     Call<UserProfile> updateProfile(@Path("id") int userId, @Body UserProfile user);
+    // Lệnh gọi API xóa tài khoản (truyền ID người dùng vào)
+    // Sửa đường dẫn từ api/users/{id} thành api/auth/{id}
+    @DELETE("api/auth/{id}")
+    Call<Void> deleteAccount(@Path("id") int userId);
+    // Gọi API Đổi mật khẩu
+    @PUT("api/auth/change-password/{id}")
+    Call<Void> changePassword(@Path("id") int userId, @Body java.util.HashMap<String, String> body);
+
+    // Lệnh gọi API tìm kiếm
+    @GET("api/products/search") // Sửa lại chữ 'products' cho đúng tên Controller C# của bạn
+    Call<List<Product>> searchProducts(@Query("keyword") String keyword);
+    // ==========================================
+    // TÌM KIẾM, LỌC VÀ SẮP XẾP NÂNG CAO
+    // ==========================================
+    @GET("api/products/filter-sort")
+    Call<List<Product>> getFilteredSortedProducts(
+            @Query("query") String query,
+            @Query("minPrice") Double minPrice,
+            @Query("maxPrice") Double maxPrice,
+            @Query("sortBy") String sortBy
+    );
 }

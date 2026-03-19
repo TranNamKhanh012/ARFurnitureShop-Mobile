@@ -9,9 +9,10 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.arfurnitureshop.R;
-import com.example.arfurnitureshop.activities.AboutUsActivity;
+import com.example.arfurnitureshop.activities.AboutActivity;
 import com.example.arfurnitureshop.activities.MainActivity;
 import com.example.arfurnitureshop.activities.ProfileActivity;
+import com.example.arfurnitureshop.activities.SettingsActivity;
 import com.google.android.material.navigation.NavigationView;
 
 public class MenuHelper {
@@ -41,12 +42,13 @@ public class MenuHelper {
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     activity.startActivity(intent);
                 }
-                else if (id == R.id.nav_about) { // Kiểm tra lại ID này trong drawer_menu.xml của bạn nhé (có thể là nav_about_us)
-                    Intent intent = new Intent(activity, AboutUsActivity.class);
+                else if (id == R.id.nav_about) {
+                    Intent intent = new Intent(activity, AboutActivity.class);
                     activity.startActivity(intent);
                 }
                 else if (id == R.id.nav_setting) {
-                    Toast.makeText(activity, "Settings", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(activity, SettingsActivity.class);
+                    activity.startActivity(intent);
                 }
 
                 // Đóng menu sau khi bấm xong

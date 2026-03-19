@@ -20,7 +20,6 @@ import com.example.arfurnitureshop.api.ApiService;
 import com.example.arfurnitureshop.api.RetrofitClient;
 import com.example.arfurnitureshop.models.Product;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,48 +28,49 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AllProductsActivity extends AppCompatActivity {
+public class SearchResultsActivity extends AppCompatActivity {
 
-    private RecyclerView rvAllProducts;
+    private RecyclerView rvFilteredProducts;
     private ProductAdapter productAdapter;
     private ApiService apiService;
+    private TextView tvResultsCount;
     private Spinner spinnerSortBy;
     private LinearLayout llFilter;
-    private TextView tvPageTitle;
 
     // Biến lưu trạng thái lọc
+    private String currentKeyword = "";
     private Double currentMinPrice = null;
     private Double currentMaxPrice = null;
-    private String currentSortBy = "date_desc"; // Mặc định là Mới nhất
-    private boolean showOnlyDiscount = false; // Phân biệt All Products hay Best Sellers
+    private String currentSortBy = "date_desc"; // Mặc định: Mới nhất
 
-    private final String[] sortOptionsArray = {"Newest", "Price: Low to High", "Price: High to Low", "Rating: High to Low", "Oldest"};
+    // Dữ liệu cho Dropdown
+    private final String[] sortOptionsArray = {"Relevance (Rating)", "Price: Low to High", "Price: High to Low", "Newest", "Oldest"};
     private final Map<String, String> sortByValueMap = new HashMap<String, String>() {{
-        put("Newest", "date_desc");
+        put("Relevance (Rating)", "rating_desc");
         put("Price: Low to High", "price_asc");
         put("Price: High to Low", "price_desc");
-        put("Rating: High to Low", "rating_desc");
+        put("Newest", "date_desc");
         put("Oldest", "date_asc");
     }};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_all_products);
+        setContentView(R.layout.activity_search_results); // File giao diện XML hôm trước
 
-        rvAllProducts = findViewById(R.id.rvAllProducts);
+        rvFilteredProducts = findViewById(R.id.rvFilteredProducts);
+        tvResultsCount = findViewById(R.id.tvResultsCount);
         spinnerSortBy = findViewById(R.id.spinnerSortBy);
         llFilter = findViewById(R.id.llFilter);
-        tvPageTitle = findViewById(R.id.tvPageTitle);
         ImageView ivBack = findViewById(R.id.ivBack);
 
-        // Hiển thị lưới 2 cột
-        rvAllProducts.setLayoutManager(new GridLayoutManager(this, 2));
+        // Hiển thị dạng lưới 2 cột
+        rvFilteredProducts.setLayoutManager(new GridLayoutManager(this, 2));
 
-        // Nhận dữ liệu từ Trang chủ để đổi Tiêu đề và kiểm tra xem có lọc hàng Sale không
-        String pageTitle = getIntent().getStringExtra("PAGE_TITLE");
-        if (pageTitle != null) tvPageTitle.setText(pageTitle);
-        showOnlyDiscount = getIntent().getBooleanExtra("SHOW_ONLY_DISCOUNT", false);
+        // Nhận từ khóa từ Trang chủ truyền sang
+        currentKeyword = getIntent().getStringExtra("SEARCH_KEYWORD");
+        if (currentKeyword == null) currentKeyword = "";
+        tvResultsCount.setText("Search results for: \"" + currentKeyword + "\"");
 
         // Cài đặt Dropdown Sắp xếp
         ArrayAdapter<String> adapterSortBy = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortOptionsArray);
@@ -81,55 +81,51 @@ public class AllProductsActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
                 currentSortBy = sortByValueMap.get(sortOptionsArray[position]);
-                fetchAllProducts(); // Gọi API khi đổi cách sắp xếp
+                fetchFilteredSortedProducts(); // Gọi API ngay khi đổi kiểu sắp xếp
             }
             @Override
             public void onNothingSelected(android.widget.AdapterView<?> parent) {}
         });
 
+        // Bắt sự kiện mở hộp thoại Lọc Giá
         llFilter.setOnClickListener(v -> showPriceFilterDialog());
+
         ivBack.setOnClickListener(v -> finish());
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
     }
 
     // ==========================================
-    // HÀM GỌI API LẤY SẢN PHẨM
+    // GỌI API ĐỂ LẤY KẾT QUẢ
     // ==========================================
-    private void fetchAllProducts() {
-        // Truyền từ khóa "" (rỗng) để lấy tất cả sản phẩm
-        apiService.getFilteredSortedProducts("", currentMinPrice, currentMaxPrice, currentSortBy)
+    private void fetchFilteredSortedProducts() {
+        apiService.getFilteredSortedProducts(currentKeyword, currentMinPrice, currentMaxPrice, currentSortBy)
                 .enqueue(new Callback<List<Product>>() {
                     @Override
                     public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             List<Product> products = response.body();
 
-                            // NẾU BẤM TỪ 'BEST SELLERS', CHỈ GIỮ LẠI HÀNG CÓ DISCOUNT
-                            if (showOnlyDiscount) {
-                                List<Product> discountedList = new ArrayList<>();
-                                for (Product p : products) {
-                                    if (p.getDiscount() > 0) discountedList.add(p);
-                                }
-                                products = discountedList;
-                            }
+                            // Cập nhật dòng chữ số lượng kết quả
+                            tvResultsCount.setText("Found " + products.size() + " results for: \"" + currentKeyword + "\"");
 
+                            // Đổ dữ liệu vào Adapter
                             productAdapter = new ProductAdapter(products);
-                            rvAllProducts.setAdapter(productAdapter);
+                            rvFilteredProducts.setAdapter(productAdapter);
                         } else {
-                            Toast.makeText(AllProductsActivity.this, "Không có dữ liệu!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SearchResultsActivity.this, "Không tìm thấy dữ liệu!", Toast.LENGTH_SHORT).show();
                         }
                     }
 
                     @Override
                     public void onFailure(Call<List<Product>> call, Throwable t) {
-                        Toast.makeText(AllProductsActivity.this, "Lỗi kết nối máy chủ!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SearchResultsActivity.this, "Lỗi kết nối máy chủ!", Toast.LENGTH_SHORT).show();
                     }
                 });
     }
 
     // ==========================================
-    // HỘP THOẠI LỌC GIÁ
+    // HỘP THOẠI NHẬP KHOẢNG GIÁ (DIALOG)
     // ==========================================
     private void showPriceFilterDialog() {
         LinearLayout layoutDialog = new LinearLayout(this);
@@ -157,15 +153,15 @@ public class AllProductsActivity extends AppCompatActivity {
                     try {
                         currentMinPrice = min.isEmpty() ? null : Double.parseDouble(min);
                         currentMaxPrice = max.isEmpty() ? null : Double.parseDouble(max);
-                        fetchAllProducts();
+                        fetchFilteredSortedProducts(); // Lọc xong thì gọi lại API
                     } catch (NumberFormatException e) {
-                        Toast.makeText(AllProductsActivity.this, "Vui lòng nhập số hợp lệ!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SearchResultsActivity.this, "Vui lòng nhập số hợp lệ!", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("CLEAR", (dialog, which) -> {
                     currentMinPrice = null;
                     currentMaxPrice = null;
-                    fetchAllProducts();
+                    fetchFilteredSortedProducts();
                 })
                 .show();
     }

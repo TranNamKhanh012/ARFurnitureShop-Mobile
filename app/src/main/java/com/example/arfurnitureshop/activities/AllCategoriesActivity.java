@@ -30,7 +30,7 @@ public class AllCategoriesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_categories);
 
-        rvAllCategories = findViewById(R.id.rvAllCategories);
+        rvAllCategories = findViewById(R.id.rvAllProductsVertical);
         // Hiển thị dạng lưới 2 cột cho đẹp
         rvAllCategories.setLayoutManager(new GridLayoutManager(this, 2));
 

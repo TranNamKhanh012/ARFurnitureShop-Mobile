@@ -50,8 +50,21 @@ public class CartDatabaseHelper extends SQLiteOpenHelper {
 
         if (c.moveToFirst()) {
             do {
-                // Khởi tạo Product từ SQLite (cần có Constructor 5 tham số trong Product.java)
-                Product p = new Product(c.getInt(0), c.getString(1), c.getString(3), "", c.getDouble(2), 0, 5.0);
+                // ==========================================
+                // ĐÃ SỬA LỖI Ở ĐÂY: Dùng Constructor rỗng và Setter
+                // ==========================================
+                Product p = new Product();
+                p.setId(c.getInt(0));         // id
+                p.setName(c.getString(1));       // name
+                p.setPrice(c.getDouble(2));      // price
+                p.setImageUrl(c.getString(3));   // image
+
+                // Các giá trị không lưu trong SQLite thì gán mặc định
+                p.setModelUrl("");
+                p.setDiscount(0);
+                p.setRating(5.0);
+
+                // Thêm vào danh sách giỏ hàng (c.getInt(4) là quantity)
                 list.add(new CartItem(p, c.getInt(4)));
             } while (c.moveToNext());
         }
@@ -59,7 +72,6 @@ public class CartDatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return list;
     }
-
     // Hàm Xóa sản phẩm khỏi giỏ
     public void deleteItem(int id) {
         SQLiteDatabase db = this.getWritableDatabase();

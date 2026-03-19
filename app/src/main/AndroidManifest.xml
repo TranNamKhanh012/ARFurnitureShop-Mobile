@@ -42,10 +42,16 @@
         <activity android:name=".activities.LoginActivity" />
         <activity android:name=".activities.RegisterActivity" />
         <activity android:name=".activities.FaceArActivity" />
-        <activity android:name=".activities.AboutUsActivity" />
+        <activity
+            android:name=".activities.AboutActivity"
+            android:exported="false" />
         <activity android:name=".activities.ContactUsActivity" />
         <activity android:name=".activities.ProfileActivity" />
-
+        <activity android:name=".activities.SettingsActivity" android:exported="false" />
+        <activity android:name=".activities.ChangePasswordActivity" android:exported="false" />
+        <activity
+            android:name=".activities.SearchResultsActivity"
+            android:exported="false" />
 
     </application>
 

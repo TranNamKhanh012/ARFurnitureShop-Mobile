@@ -78,7 +78,14 @@ public class ProductDetailActivity extends AppCompatActivity {
         String imageUrl = getIntent().getStringExtra("PRODUCT_IMAGE");
         String modelUrl = getIntent().getStringExtra("PRODUCT_MODEL");
 
-        currentProduct = new Product(productId, name, imageUrl, modelUrl, price, 0, 5.0);
+        currentProduct = new Product();
+        currentProduct.setId(productId);
+        currentProduct.setName(name);
+        currentProduct.setImageUrl(imageUrl);
+        currentProduct.setModelUrl(modelUrl);
+        currentProduct.setPrice(price);
+        currentProduct.setDiscount(0); // Mặc định nếu không có dữ liệu
+        currentProduct.setRating(5.0);
 
         if (name != null) tvProductName.setText(name);
 

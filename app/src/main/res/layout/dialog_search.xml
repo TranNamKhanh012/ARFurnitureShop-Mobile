@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/bg_square_edittext"> <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Tìm kiếm sản phẩm"
+    android:textSize="18sp"
+    android:textStyle="bold"
+    android:textColor="#333333"
+    android:layout_marginBottom="16dp"/>
+
+    <EditText
+        android:id="@+id/edtRealSearch"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_square_edittext"
+        android:hint="Nhập tên hoặc mô tả..."
+        android:paddingHorizontal="16dp"
+        android:inputType="text"
+        android:imeOptions="actionSearch"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/btnRealSearch"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="TÌM KIẾM NGAY"
+        android:backgroundTint="#3F51B5"
+        app:cornerRadius="8dp"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"/>
+</LinearLayout>
