@@ -1,11 +1,9 @@
-package com.example.arfurnitureshop.activities; // Thay bằng package name thực tế của bạn
+package com.example.arfurnitureshop.activities;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ImageView;
-import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
@@ -13,68 +11,49 @@ import com.example.arfurnitureshop.R;
 
 public class ContactUsActivity extends AppCompatActivity {
 
-    private ImageView ivBack;
-    private TextView tvHeaderTitle;
-    private CardView cardHotline, cardChat;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_us);
 
-        // 1. Ánh xạ các view từ Header và Layout
-        initViews();
+        // 1. Ánh xạ 3 nút bấm và nút Back
+        ImageView ivBack = findViewById(R.id.ivBack);
+        CardView cardHotline = findViewById(R.id.cardHotline);
+        CardView cardZalo = findViewById(R.id.cardZalo);
+        CardView cardTawkTo = findViewById(R.id.cardTawkTo);
 
-        // 2. Cấu hình Header cho trang Contact Us
-        setupHeader();
-
-        // 3. Xử lý sự kiện click
-        setupClickListeners();
-    }
-
-    private void initViews() {
-        // Ánh xạ từ header được include (dùng đúng ID trong file layout_main_header hoặc layout_custom_header)
-        ivBack = findViewById(R.id.ivMenu); // Nếu bạn dùng icon menu làm nút back
-        tvHeaderTitle = findViewById(R.id.tvHeaderTitle); // Nếu header có TextView title
-
-        // Ánh xạ các nút liên hệ
-        cardHotline = findViewById(R.id.cardHotline);
-        cardChat = findViewById(R.id.cardChat);
-
-        // Ẩn các icon không cần thiết trong header (nếu có)
-        View ivSearch = findViewById(R.id.ivSearch);
-        if (ivSearch != null) ivSearch.setVisibility(View.GONE);
-    }
-
-    private void setupHeader() {
-        // Đổi icon Menu thành icon Back (nếu cần)
-        ivBack.setImageResource(android.R.drawable.ic_menu_revert);
-        ivBack.setRotation(0); // Trả về 0 độ nếu trước đó bạn xoay 90 độ
-
-        // Đổi tiêu đề
-        if (tvHeaderTitle != null) {
-            tvHeaderTitle.setText("Liên hệ hỗ trợ");
+        // 2. Xử lý nút quay lại
+        if (ivBack != null) {
+            ivBack.setOnClickListener(v -> finish());
         }
-    }
 
-    private void setupClickListeners() {
-        // Nút quay lại
-        ivBack.setOnClickListener(v -> finish());
+        // 3. Xử lý Gọi điện Hotline
+        if (cardHotline != null) {
+            cardHotline.setOnClickListener(v -> {
+                String phone = "0123456789"; // Đổi thành số điện thoại thật của bạn
+                Intent intent = new Intent(Intent.ACTION_DIAL);
+                intent.setData(Uri.parse("tel:" + phone));
+                startActivity(intent);
+            });
+        }
 
-        // Gọi điện Hotline
-        cardHotline.setOnClickListener(v -> {
-            String phone = "0123456789"; // Số điện thoại hỗ trợ của bạn
-            Intent intent = new Intent(Intent.ACTION_DIAL);
-            intent.setData(Uri.parse("tel:" + phone));
-            startActivity(intent);
-        });
+        // 4. Xử lý Nhắn tin Zalo
+        if (cardZalo != null) {
+            cardZalo.setOnClickListener(v -> {
+                String url = "https://zalo.me/0123456789"; // Đổi thành link zalo thật của bạn
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(url));
+                startActivity(intent);
+            });
+        }
 
-        // Nhắn tin WhatsApp hoặc Zalo (Dùng link web để tự động mở App)
-        cardChat.setOnClickListener(v -> {
-            String url = "https://zalo.me/0123456789"; // Hoặc link WhatsApp
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(url));
-            startActivity(intent);
-        });
+        // 5. Xử lý mở màn hình Chat Tawk.to
+        if (cardTawkTo != null) {
+            cardTawkTo.setOnClickListener(v -> {
+                // Chuyển sang trang TawkToChatActivity mà bạn đã tạo ở bước trước
+                Intent intent = new Intent(ContactUsActivity.this, TawkToChatActivity.class);
+                startActivity(intent);
+            });
+        }
     }
 }

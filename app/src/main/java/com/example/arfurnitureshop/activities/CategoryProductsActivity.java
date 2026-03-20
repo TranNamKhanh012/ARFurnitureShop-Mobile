@@ -34,7 +34,7 @@ public class CategoryProductsActivity extends AppCompatActivity {
         // Tái sử dụng luôn giao diện của AllProducts cho tiện, vì cấu trúc y hệt nhau
         setContentView(R.layout.activity_all_products);
 
-        rvCategoryProducts = findViewById(R.id.rvAllProductsVertical);
+        rvCategoryProducts = findViewById(R.id.rvAllProducts);
         tvCategoryName = findViewById(R.id.tvPageTitle);
         ivBack = findViewById(R.id.ivBack);
 

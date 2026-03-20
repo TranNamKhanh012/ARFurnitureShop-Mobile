@@ -96,6 +96,8 @@ public class CartActivity extends AppCompatActivity {
             }
             return true;
         });
+        // GỌI TRỢ LÝ TÌM KIẾM RA LÀM VIỆC
+        com.example.arfurnitureshop.utils.SearchHelper.setupSearch(this);
     }
 
     // PHẢI CÓ HÀM NÀY ĐỂ HẾT LỖI "this::updateTotal"

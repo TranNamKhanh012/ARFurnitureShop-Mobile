@@ -89,6 +89,8 @@ public class WishlistActivity extends AppCompatActivity {
             }
             return true;
         });
+        // GỌI TRỢ LÝ TÌM KIẾM RA LÀM VIỆC
+        com.example.arfurnitureshop.utils.SearchHelper.setupSearch(this);
     }
 
     @Override

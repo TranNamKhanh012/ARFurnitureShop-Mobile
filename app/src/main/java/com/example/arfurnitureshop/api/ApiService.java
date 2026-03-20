@@ -107,4 +107,19 @@ public interface ApiService {
             @Query("maxPrice") Double maxPrice,
             @Query("sortBy") String sortBy
     );
+
+    // ==========================================
+    // API QUẢN LÝ ĐỊA CHỈ GIAO HÀNG
+    // ==========================================
+    @GET("api/Addresses/user/{userId}")
+    Call<List<com.example.arfurnitureshop.models.UserAddress>> getUserAddresses(@Path("userId") int userId);
+
+    @POST("api/Addresses")
+    Call<com.example.arfurnitureshop.models.UserAddress> addAddress(@Body com.example.arfurnitureshop.models.UserAddress address);
+
+    @PUT("api/Addresses/{id}")
+    Call<Void> updateAddress(@Path("id") int id, @Body com.example.arfurnitureshop.models.UserAddress address);
+
+    @DELETE("api/Addresses/{id}")
+    Call<Void> deleteAddress(@Path("id") int id);
 }

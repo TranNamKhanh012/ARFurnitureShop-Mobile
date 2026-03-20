@@ -139,13 +139,8 @@ public class MainActivity extends AppCompatActivity {
         fetchProductsFromApi();
 
         // --- 8. XỬ LÝ THANH TÌM KIẾM MÀN HÌNH NỔI ---
-        TextView tvFakeSearch = findViewById(R.id.tvFakeSearch); // Thanh chữ giả
-        ImageView ivSearch = findViewById(R.id.ivSearch);        // Nút kính lúp
-
-        android.view.View.OnClickListener openSearchDialog = v -> showSearchDialog();
-
-        if (tvFakeSearch != null) tvFakeSearch.setOnClickListener(openSearchDialog);
-        if (ivSearch != null) ivSearch.setOnClickListener(openSearchDialog);
+        // --- 8. GỌI TRỢ LÝ TÌM KIẾM RA LÀM VIỆC ---
+        com.example.arfurnitureshop.utils.SearchHelper.setupSearch(this);
     }
 
     // ================= HÀM LẤY DỮ LIỆU TỪ BACKEND =================
@@ -233,43 +228,5 @@ public class MainActivity extends AppCompatActivity {
             CartManager.getInstance(this).clear();
             WishlistManager.clear();
         }
-    }
-
-    // ==========================================
-    // HÀM HIỂN THỊ MÀN HÌNH NỔI TÌM KIẾM
-    // ==========================================
-    private void showSearchDialog() {
-        android.app.Dialog dialog = new android.app.Dialog(this);
-        dialog.setContentView(R.layout.dialog_search);
-
-        // Chỉnh cho khung nổi rộng ra mép màn hình và nền phía sau trong suốt
-        dialog.getWindow().setLayout(android.view.ViewGroup.LayoutParams.MATCH_PARENT, android.view.ViewGroup.LayoutParams.WRAP_CONTENT);
-        dialog.getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
-
-        EditText edtRealSearch = dialog.findViewById(R.id.edtRealSearch);
-        android.widget.Button btnRealSearch = dialog.findViewById(R.id.btnRealSearch);
-
-        // Bắt sự kiện khi bấm nút TÌM KIẾM NGAY trong khung nổi
-        btnRealSearch.setOnClickListener(v -> {
-            String keyword = edtRealSearch.getText().toString().trim();
-            if (keyword.isEmpty()) {
-                Toast.makeText(this, "Vui lòng nhập từ khóa!", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            dialog.dismiss(); // Đóng khung nổi lại
-
-            // Đẩy sang trang TÌM KIẾM NÂNG CAO (MỚI)
-            Intent intent = new Intent(this, SearchResultsActivity.class); // <-- Đổi thành trang mới
-            intent.putExtra("SEARCH_KEYWORD", keyword);
-            startActivity(intent);
-        });
-
-        // Hỗ trợ bấm phím Enter trên bàn phím ảo điện thoại
-        edtRealSearch.setOnEditorActionListener((v, actionId, event) -> {
-            btnRealSearch.performClick();
-            return true;
-        });
-
-        dialog.show(); // Hiển thị khung nổi lên
     }
 }

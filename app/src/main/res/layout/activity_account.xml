@@ -11,7 +11,12 @@
         android:layout_height="match_parent"
         android:background="#FFFFFF">
 
-        <include layout="@layout/layout_main_header" />
+        <include
+            android:id="@+id/headerLayout"
+            layout="@layout/layout_main_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true" />
 
         <LinearLayout
             android:id="@+id/layout_logged_out"

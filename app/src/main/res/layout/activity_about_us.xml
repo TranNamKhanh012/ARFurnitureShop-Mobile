@@ -11,7 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
+        android:minHeight="?attr/actionBarSize"
+        android:paddingTop="36dp"
+        android:paddingBottom="12dp"
+        android:paddingHorizontal="16dp"
         android:gravity="center_vertical"
         android:background="@android:color/white"
         android:elevation="4dp">

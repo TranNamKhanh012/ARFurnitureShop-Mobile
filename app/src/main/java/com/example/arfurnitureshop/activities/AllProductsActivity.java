@@ -38,11 +38,10 @@ public class AllProductsActivity extends AppCompatActivity {
     private LinearLayout llFilter;
     private TextView tvPageTitle;
 
-    // Biến lưu trạng thái lọc
     private Double currentMinPrice = null;
     private Double currentMaxPrice = null;
-    private String currentSortBy = "date_desc"; // Mặc định là Mới nhất
-    private boolean showOnlyDiscount = false; // Phân biệt All Products hay Best Sellers
+    private String currentSortBy = "date_desc";
+    private boolean showOnlyDiscount = false;
 
     private final String[] sortOptionsArray = {"Newest", "Price: Low to High", "Price: High to Low", "Rating: High to Low", "Oldest"};
     private final Map<String, String> sortByValueMap = new HashMap<String, String>() {{
@@ -58,21 +57,21 @@ public class AllProductsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_products);
 
+        // ĐÃ SỬA: Khởi tạo API ngay trên cùng để tránh lỗi Null
+        apiService = RetrofitClient.getClient().create(ApiService.class);
+
         rvAllProducts = findViewById(R.id.rvAllProducts);
         spinnerSortBy = findViewById(R.id.spinnerSortBy);
         llFilter = findViewById(R.id.llFilter);
         tvPageTitle = findViewById(R.id.tvPageTitle);
         ImageView ivBack = findViewById(R.id.ivBack);
 
-        // Hiển thị lưới 2 cột
         rvAllProducts.setLayoutManager(new GridLayoutManager(this, 2));
 
-        // Nhận dữ liệu từ Trang chủ để đổi Tiêu đề và kiểm tra xem có lọc hàng Sale không
         String pageTitle = getIntent().getStringExtra("PAGE_TITLE");
         if (pageTitle != null) tvPageTitle.setText(pageTitle);
         showOnlyDiscount = getIntent().getBooleanExtra("SHOW_ONLY_DISCOUNT", false);
 
-        // Cài đặt Dropdown Sắp xếp
         ArrayAdapter<String> adapterSortBy = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortOptionsArray);
         adapterSortBy.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSortBy.setAdapter(adapterSortBy);
@@ -81,7 +80,7 @@ public class AllProductsActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
                 currentSortBy = sortByValueMap.get(sortOptionsArray[position]);
-                fetchAllProducts(); // Gọi API khi đổi cách sắp xếp
+                fetchAllProducts();
             }
             @Override
             public void onNothingSelected(android.widget.AdapterView<?> parent) {}
@@ -90,22 +89,20 @@ public class AllProductsActivity extends AppCompatActivity {
         llFilter.setOnClickListener(v -> showPriceFilterDialog());
         ivBack.setOnClickListener(v -> finish());
 
-        apiService = RetrofitClient.getClient().create(ApiService.class);
+        // ĐÃ SỬA: Gọi API luôn khi vào trang
+        fetchAllProducts();
     }
 
-    // ==========================================
-    // HÀM GỌI API LẤY SẢN PHẨM
-    // ==========================================
     private void fetchAllProducts() {
-        // Truyền từ khóa "" (rỗng) để lấy tất cả sản phẩm
-        apiService.getFilteredSortedProducts("", currentMinPrice, currentMaxPrice, currentSortBy)
+        // ĐÃ SỬA: Chuyển "" thành null để Server trả về toàn bộ
+        // ĐÃ SỬA: Trả lại chuỗi rỗng "" thay vì null để Server C# không bị báo lỗi 400
+        apiService.getFilteredSortedProducts(null, currentMinPrice, currentMaxPrice, currentSortBy)
                 .enqueue(new Callback<List<Product>>() {
                     @Override
                     public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
                         if (response.isSuccessful() && response.body() != null) {
                             List<Product> products = response.body();
 
-                            // NẾU BẤM TỪ 'BEST SELLERS', CHỈ GIỮ LẠI HÀNG CÓ DISCOUNT
                             if (showOnlyDiscount) {
                                 List<Product> discountedList = new ArrayList<>();
                                 for (Product p : products) {
@@ -114,10 +111,15 @@ public class AllProductsActivity extends AppCompatActivity {
                                 products = discountedList;
                             }
 
+                            if(products.isEmpty()) {
+                                Toast.makeText(AllProductsActivity.this, "Không có sản phẩm nào phù hợp!", Toast.LENGTH_SHORT).show();
+                            }
+
                             productAdapter = new ProductAdapter(products);
                             rvAllProducts.setAdapter(productAdapter);
                         } else {
-                            Toast.makeText(AllProductsActivity.this, "Không có dữ liệu!", Toast.LENGTH_SHORT).show();
+                            // ĐÃ SỬA: In ra mã lỗi để bắt bệnh chính xác nếu Server từ chối
+                            Toast.makeText(AllProductsActivity.this, "Lỗi Server: " + response.code(), Toast.LENGTH_LONG).show();
                         }
                     }
 
@@ -128,9 +130,6 @@ public class AllProductsActivity extends AppCompatActivity {
                 });
     }
 
-    // ==========================================
-    // HỘP THOẠI LỌC GIÁ
-    // ==========================================
     private void showPriceFilterDialog() {
         LinearLayout layoutDialog = new LinearLayout(this);
         layoutDialog.setOrientation(LinearLayout.VERTICAL);

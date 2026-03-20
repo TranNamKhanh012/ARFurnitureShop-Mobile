@@ -54,11 +54,14 @@ public class AccountActivity extends AppCompatActivity {
 
         // Nhóm nút Đã đăng nhập
         ivEditProfile.setOnClickListener(v -> {
-            Toast.makeText(this, "Chuyển đến trang Chỉnh sửa hồ sơ", Toast.LENGTH_SHORT).show();
+            // Chuyển thẳng sang trang ProfileActivity
+            Intent intent = new Intent(AccountActivity.this, ProfileActivity.class);
+            startActivity(intent);
         });
 
         btnMyAddresses.setOnClickListener(v -> {
-            Toast.makeText(this, "Chuyển đến trang Quản lý địa chỉ", Toast.LENGTH_SHORT).show();
+            // Chuyển đến trang Địa chỉ của tôi
+            startActivity(new android.content.Intent(AccountActivity.this, MyAddressesActivity.class));
         });
 
         btnOrderHistory.setOnClickListener(v -> {
@@ -127,6 +130,8 @@ public class AccountActivity extends AppCompatActivity {
             }
             return true;
         });
+        // GỌI TRỢ LÝ TÌM KIẾM RA LÀM VIỆC
+        com.example.arfurnitureshop.utils.SearchHelper.setupSearch(this);
     }
 
     @Override

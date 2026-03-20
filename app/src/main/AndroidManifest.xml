@@ -52,7 +52,15 @@
         <activity
             android:name=".activities.SearchResultsActivity"
             android:exported="false" />
-
+        <activity
+            android:name=".activities.TawkToChatActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.MyAddressesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.AddAddressActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
