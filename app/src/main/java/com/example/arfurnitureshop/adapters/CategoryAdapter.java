@@ -42,17 +42,32 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         // Hiển thị tên và ảnh danh mục
         holder.tvCategoryName.setText(category.getName());
 
-        // Sử dụng Glide để load ảnh, thêm error() để tránh crash nếu link ảnh sofa mới bị lỗi
-        Glide.with(holder.itemView.getContext())
-                .load(category.getImageUrl())
-                .placeholder(android.R.drawable.ic_menu_gallery) // Icon mặc định của Android
-                .error(android.R.drawable.stat_notify_error)    // Icon lỗi mặc định// Ảnh lỗi
+        android.content.Context context = holder.itemView.getContext();
+        String fullImageUrl = "http://trannamkhanh-001-site1.jtempurl.com/images/" + category.getImageUrl();
+
+        // Điền User/Pass màu cam của bạn vào đây
+        String userCam = "11300735";
+        String passCam = "60-dayfreetrial";
+        String credential = okhttp3.Credentials.basic(userCam, passCam);
+
+        com.bumptech.glide.load.model.GlideUrl glideUrlWithAuth = new com.bumptech.glide.load.model.GlideUrl(fullImageUrl,
+                new com.bumptech.glide.load.model.LazyHeaders.Builder()
+                        .addHeader("Authorization", credential)
+                        .build());
+
+        // Load ảnh vào biến holder.imgCategory (Nhớ đổi tên biến imgCategory cho đúng với file của bạn)
+        Glide.with(context)
+                .load(glideUrlWithAuth)
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_foreground)
                 .into(holder.imgCategory);
 
         // --- SỰ KIỆN CLICK: Chuyển sang màn hình lọc sản phẩm theo Category ---
         holder.itemView.setOnClickListener(v -> {
-            Log.d("CLICK_CHECK", "Đã bấm vào danh mục: " + category.getName()); // Thêm dòng này để kiểm tra
-            Context context = v.getContext();
+            Log.d("CLICK_CHECK", "Đã bấm vào danh mục: " + category.getName());
+
+            // [ĐÃ SỬA]: Xóa dòng "Context context = v.getContext();" ở đây đi
+            // Cứ thế dùng luôn chữ "context" đã được khai báo ở phía trên (chỗ Glide)
             Intent intent = new Intent(context, CategoryProductsActivity.class);
             intent.putExtra("CATEGORY_ID", category.getId());
             intent.putExtra("CATEGORY_NAME", category.getName());

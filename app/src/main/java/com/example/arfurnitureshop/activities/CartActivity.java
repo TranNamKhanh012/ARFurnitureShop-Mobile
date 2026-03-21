@@ -2,8 +2,11 @@ package com.example.arfurnitureshop.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,22 +24,35 @@ public class CartActivity extends AppCompatActivity {
     // PHẢI KHAI BÁO BIẾN Ở ĐÂY ĐỂ HẾT ĐỎ
     private RecyclerView rv;
     private TextView tvTotal;
+    private Button btnContinue;
+    private double currentTotal = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
 
-        // Ánh xạ View từ layout activity_cart.xml
+        // Ánh xạ đúng ID từ file XML bạn vừa gửi
         rv = findViewById(R.id.rvCartItems);
         tvTotal = findViewById(R.id.tvTotalAmount);
+        btnContinue = findViewById(R.id.btnContinue); // Khớp với android:id="@+id/btnContinue"
 
         rv.setLayoutManager(new LinearLayoutManager(this));
-
-        // Gắn Adapter và truyền hàm updateTotal để cập nhật tiền khi tăng/giảm số lượng
         rv.setAdapter(new CartAdapter(CartManager.getInstance(this).getItems(), this::updateTotal));
 
         updateTotal();
+
+        // XỬ LÝ SỰ KIỆN NÚT CONTINUE (THANH TOÁN)
+        btnContinue.setOnClickListener(v -> {
+            if (currentTotal > 0) {
+                // Chuyển sang trang Checkout xác nhận
+                Intent intent = new Intent(CartActivity.this, CheckoutActivity.class);
+                intent.putExtra("TOTAL_PRICE", currentTotal);
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Giỏ hàng của bạn đang trống!", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         // ==========================================
         // GỌI TRỢ LÝ MENU RA LÀM VIỆC (CHỈ 3 DÒNG CODE)

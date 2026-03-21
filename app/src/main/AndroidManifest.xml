@@ -61,6 +61,12 @@
         <activity
             android:name=".activities.AddAddressActivity"
             android:exported="false" />
+        <activity
+            android:name=".activities.CheckoutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activities.PaymentWebViewActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.arfurnitureshop.R;
 import com.example.arfurnitureshop.api.ApiService;
+import com.example.arfurnitureshop.api.RetrofitClient;
 import com.example.arfurnitureshop.models.LoginRequest;
 import com.example.arfurnitureshop.models.User;
 
@@ -19,11 +20,13 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
-
+    private ApiService apiService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        apiService = RetrofitClient.getClient().create(ApiService.class);
 
         EditText etUser = findViewById(R.id.etLoginUsername);
         EditText etPass = findViewById(R.id.etLoginPassword);
@@ -49,16 +52,14 @@ public class LoginActivity extends AppCompatActivity {
             LoginRequest loginRequest = new LoginRequest(username, password);
 
             // Gọi API
-            ApiService.apiService.login(loginRequest).enqueue(new Callback<User>() {
+            // Thay vì gọi ApiService.apiService..., hãy dùng biến apiService đã khởi tạo ở onCreate
+            apiService.login(loginRequest).enqueue(new Callback<User>() {
                 @Override
                 public void onResponse(Call<User> call, Response<User> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         User loggedInUser = response.body();
-                        Toast.makeText(LoginActivity.this, "Xin chào " + loggedInUser.getFullName(), Toast.LENGTH_SHORT).show();
 
-                        // ==========================================
-                        // LƯU THÔNG TIN VÀO BỘ NHỚ (SharedPreferences)
-                        // ==========================================
+                        // Lưu thông tin vào SharedPreferences (Giữ nguyên logic của bạn)
                         android.content.SharedPreferences sharedPreferences = getSharedPreferences("UserPrefs", android.content.Context.MODE_PRIVATE);
                         android.content.SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putBoolean("IS_LOGGED_IN", true);
@@ -66,10 +67,11 @@ public class LoginActivity extends AppCompatActivity {
                         editor.putString("USERNAME", loggedInUser.getUsername());
                         editor.putString("FULL_NAME", loggedInUser.getFullName());
                         editor.putString("ROLE", loggedInUser.getRole());
-                        editor.apply(); // Bắt buộc phải có lệnh này để lưu
-                        // ==========================================
+                        editor.apply();
 
-                        // KIỂM TRA QUYỀN (ROLE) ĐỂ CHUYỂN TRANG
+                        Toast.makeText(LoginActivity.this, "Xin chào " + loggedInUser.getFullName(), Toast.LENGTH_SHORT).show();
+
+                        // Chuyển trang dựa trên Role
                         if ("Admin".equals(loggedInUser.getRole())) {
                             Toast.makeText(LoginActivity.this, "Tài khoản Admin vui lòng đăng nhập trên Web!", Toast.LENGTH_LONG).show();
                         } else {
@@ -78,13 +80,15 @@ public class LoginActivity extends AppCompatActivity {
                             finish();
                         }
                     } else {
+                        // Nếu server trả về lỗi (sai pass hoặc sai user mây)
                         Toast.makeText(LoginActivity.this, "Sai tài khoản hoặc mật khẩu!", Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<User> call, Throwable t) {
-                    Toast.makeText(LoginActivity.this, "Lỗi kết nối Server", Toast.LENGTH_SHORT).show();
+                    // Lỗi này thường do: Quên bật usesCleartextTraffic hoặc sai Username/Password màu cam trong RetrofitClient
+                    Toast.makeText(LoginActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
         });

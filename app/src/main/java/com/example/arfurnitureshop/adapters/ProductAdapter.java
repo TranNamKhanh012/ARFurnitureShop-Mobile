@@ -28,9 +28,13 @@ import java.util.List;
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductViewHolder> {
 
     private List<Product> productList;
+    private com.example.arfurnitureshop.api.ApiService apiService; // <-- THÊM DÒNG NÀY
 
     public ProductAdapter(List<Product> productList) {
         this.productList = productList;
+        // Khởi tạo apiService thông qua RetrofitClient đã có chìa khóa vượt rào
+        this.apiService = com.example.arfurnitureshop.api.RetrofitClient.getClient()
+                .create(com.example.arfurnitureshop.api.ApiService.class);
     }
 
     @NonNull
@@ -81,9 +85,23 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             holder.tvPrice.setText(formattedPrice);
         }
 
-        // 4. Load ảnh bằng Glide
+        // 1. Link ảnh gốc của bạn
+        String fullImageUrl = "http://trannamkhanh-001-site1.jtempurl.com/images/" + product.getImageUrl();
+
+// 2. TẠO CHÌA KHÓA MÀU CAM CHO GLIDE (Điền đúng User/Pass của SmarterASP vào đây nhé)
+        String userCam = "11300735"; // <-- SỬA CHỖ NÀY
+        String passCam = "60-dayfreetrial";      // <-- SỬA CHỖ NÀY
+        String credential = okhttp3.Credentials.basic(userCam, passCam);
+
+// 3. Gắn chìa khóa vào link ảnh bằng GlideUrl
+        com.bumptech.glide.load.model.GlideUrl glideUrlWithAuth = new com.bumptech.glide.load.model.GlideUrl(fullImageUrl,
+                new com.bumptech.glide.load.model.LazyHeaders.Builder()
+                        .addHeader("Authorization", credential)
+                        .build());
+
+// 4. Load ảnh bằng biến glideUrlWithAuth thay vì String
         Glide.with(context)
-                .load(product.getImageUrl())
+                .load(glideUrlWithAuth) // <--- TRUYỀN BIẾN MỚI NÀY VÀO ĐÂY
                 .placeholder(android.R.drawable.ic_menu_gallery)
                 .error(android.R.drawable.ic_menu_report_image)
                 .into(holder.imgProduct);
@@ -126,7 +144,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                     if (context instanceof com.example.arfurnitureshop.activities.WishlistActivity) {
                         notifyDataSetChanged();
                     }
-                    com.example.arfurnitureshop.api.ApiService.apiService.removeFromWishlist(userId, productId).enqueue(new retrofit2.Callback<Void>() {
+                    apiService.removeFromWishlist(userId, productId).enqueue(new retrofit2.Callback<Void>() {
                         @Override
                         public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
                             Toast.makeText(context, "Đã bỏ Yêu thích!", Toast.LENGTH_SHORT).show();
@@ -137,7 +155,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 } else {
                     com.example.arfurnitureshop.models.WishlistManager.add(product);
                     holder.ivWishlist.setImageResource(R.drawable.ic_heart_filled);
-                    com.example.arfurnitureshop.api.ApiService.apiService.addToWishlist(userId, productId).enqueue(new retrofit2.Callback<Void>() {
+                    apiService.addToWishlist(userId, productId).enqueue(new retrofit2.Callback<Void>() {
                         @Override
                         public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
                             Toast.makeText(context, "Đã thêm vào Wishlist!", Toast.LENGTH_SHORT).show();
@@ -213,7 +231,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
                 if (userId != -1) {
                     for (int i = 0; i < quantity[0]; i++) {
-                        com.example.arfurnitureshop.api.ApiService.apiService.addToCart(userId, product.getId()).enqueue(new retrofit2.Callback<Void>() {
+                        apiService.addToCart(userId, product.getId()).enqueue(new retrofit2.Callback<Void>() {
                             @Override
                             public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
                             @Override

@@ -7,31 +7,31 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
-    // 1. THAY LINK THẬT CỦA BẠN VÀO ĐÂY
+    // 1. THAY LINK THẬT CỦA BẠN VÀO ĐÂY (Link SmarterASP)
     private static final String BASE_URL = "http://trannamkhanh-001-site1.jtempurl.com/";
     private static Retrofit retrofit = null;
 
     public static Retrofit getClient() {
         if (retrofit == null) {
-            // 2. TẠO CHÌA KHÓA VƯỢT RÀO (BASIC AUTH)
-            // Thay "user_cam" và "pass_cam" bằng thông tin ở bảng màu cam trên SmarterASP nhé
-            String authToken = Credentials.basic("Tên_Người_Dùng_Cam", "Mật_Khẩu_Cam");
+            // 2. LẤY THÔNG TIN TỪ PHẦN "PASSWORD PROTECTION" TRÊN SMARTERASP
+            String userCam = "11300735";
+            String passCam = "60-dayfreetrial";
+            String authToken = Credentials.basic(userCam, passCam);
 
-            // 3. THIẾT LẬP OKHTTP ĐỂ TỰ ĐỘNG GỬI CHÌA KHÓA TRONG MỖI REQUEST
+            // 3. CẤU HÌNH INTERCEPTOR ĐỂ VƯỢT RÀO
             OkHttpClient client = new OkHttpClient.Builder()
                     .addInterceptor(chain -> {
                         Request original = chain.request();
                         Request request = original.newBuilder()
-                                .header("Authorization", authToken) // Gắn thẻ căn cước vào đây
+                                .header("Authorization", authToken)
                                 .build();
                         return chain.proceed(request);
                     })
                     .build();
 
-            // 4. KHỞI TẠO RETROFIT VỚI CLIENT ĐÃ CÓ CHÌA KHÓA
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
-                    .client(client)
+                    .client(client) // Gắn client đã có chìa khóa vào
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }

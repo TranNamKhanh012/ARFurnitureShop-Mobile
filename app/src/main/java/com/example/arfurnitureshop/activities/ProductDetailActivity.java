@@ -35,6 +35,7 @@ import retrofit2.Response;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
+    private com.example.arfurnitureshop.api.ApiService apiService;
     private Product currentProduct;
     // Biến lưu số lượng người dùng chọn mua
     private int selectedQuantity = 1;
@@ -46,7 +47,8 @@ public class ProductDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_detail);
-
+        apiService = com.example.arfurnitureshop.api.RetrofitClient.getClient()
+                .create(com.example.arfurnitureshop.api.ApiService.class);
         // ==========================================
         // 1. ÁNH XẠ TOÀN BỘ VIEW TỪ GIAO DIỆN
         // ==========================================
@@ -92,10 +94,27 @@ public class ProductDetailActivity extends AppCompatActivity {
         NumberFormat formatVN = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
         tvProductPrice.setText(formatVN.format(price));
 
+        // 1. Đã đổi tên biến thành imageName để tránh bị trùng lặp
+        String imageName = getIntent().getStringExtra("PRODUCT_IMAGE");
+        String fullImageUrl = "http://trannamkhanh-001-site1.jtempurl.com/images/" + imageName;
+
+// 2. Tạo chìa khóa màu cam
+        String userCam = "11300735"; // <-- Nhập đúng User của bạn
+        String passCam = "60-dayfreetrial";      // <-- Nhập đúng Pass của bạn
+        String credential = okhttp3.Credentials.basic(userCam, passCam);
+
+// 3. Gắn chìa khóa vào link
+        com.bumptech.glide.load.model.GlideUrl glideUrlWithAuth = new com.bumptech.glide.load.model.GlideUrl(fullImageUrl,
+                new com.bumptech.glide.load.model.LazyHeaders.Builder()
+                        .addHeader("Authorization", credential)
+                        .build());
+
+// 4. Load ảnh
         Glide.with(this)
-                .load(imageUrl)
-                .placeholder(android.R.drawable.ic_menu_gallery)
-                .into(ivProductImage);
+                .load(glideUrlWithAuth)
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_foreground)
+                .into(ivProductImage); // <--- Hãy xóa chữ này và điền đúng tên biến ImageView của bạn vào (ví dụ: ivProduct)
 
         // ==========================================
         // 3. XỬ LÝ SỰ KIỆN TĂNG/GIẢM SỐ LƯỢNG
@@ -140,7 +159,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
                 // Gửi lên C#
                 for (int i = 0; i < selectedQuantity; i++) {
-                    ApiService.apiService.addToCart(userId, productId).enqueue(new retrofit2.Callback<Void>() {
+                    apiService.addToCart(userId, productId).enqueue(new retrofit2.Callback<Void>() {
                         @Override
                         public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
                         @Override
@@ -150,8 +169,30 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         });
 
+        // ==========================================
+        // 5. XỬ LÝ NÚT BUY NOW: THANH TOÁN LUÔN
+        // ==========================================
         btnBuyNow.setOnClickListener(v -> {
-            Toast.makeText(this, "Chuyển đến trang Thanh toán...", Toast.LENGTH_SHORT).show();
+            // 1. Kiểm tra đăng nhập trước khi cho mua (giống nút Add to Cart)
+            android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+            boolean isLoggedIn = prefs.getBoolean("IS_LOGGED_IN", false);
+
+            if (!isLoggedIn) {
+                Toast.makeText(ProductDetailActivity.this, "Vui lòng đăng nhập để mua hàng!", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(ProductDetailActivity.this, LoginActivity.class));
+            } else {
+                // 2. Tính tổng tiền = Giá x Số lượng đã chọn
+                double totalPrice = currentProduct.getPrice() * selectedQuantity;
+
+                // 3. Chuyển sang trang Checkout và gửi kèm số tiền
+                Intent intent = new Intent(ProductDetailActivity.this, CheckoutActivity.class);
+                intent.putExtra("TOTAL_PRICE", totalPrice); // Gửi tổng tiền để CheckoutActivity nhận
+                intent.putExtra("PRODUCT_NAME", currentProduct.getName()); // (Tùy chọn) Gửi tên để hiển thị
+
+                startActivity(intent);
+
+                Toast.makeText(this, "Đang chuẩn bị thanh toán cho " + selectedQuantity + " sản phẩm...", Toast.LENGTH_SHORT).show();
+            }
         });
 
         // Nút tim và AR giữ nguyên logic cũ của bạn
@@ -169,7 +210,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 if (com.example.arfurnitureshop.models.WishlistManager.isFavorite(currentId)) {
                     com.example.arfurnitureshop.models.WishlistManager.remove(currentId);
                     fabWishlist.setImageResource(R.drawable.ic_heart_empty);
-                    ApiService.apiService.removeFromWishlist(userId, currentId).enqueue(new retrofit2.Callback<Void>() {
+                    apiService.removeFromWishlist(userId, currentId).enqueue(new retrofit2.Callback<Void>() {
                         @Override
                         public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
                         @Override
@@ -178,7 +219,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 } else {
                     com.example.arfurnitureshop.models.WishlistManager.add(currentProduct);
                     fabWishlist.setImageResource(R.drawable.ic_heart_filled);
-                    ApiService.apiService.addToWishlist(userId, currentId).enqueue(new retrofit2.Callback<Void>() {
+                    apiService.addToWishlist(userId, currentId).enqueue(new retrofit2.Callback<Void>() {
                         @Override
                         public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
                         @Override

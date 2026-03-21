@@ -29,13 +29,6 @@ public interface ApiService {
             .setDateFormat("yyyy-MM-dd HH:mm:ss")
             .create();
 
-    // LƯU Ý QUAN TRỌNG: Bạn nhớ thay cái baseUrl bằng link API thật của bạn nhé!
-    // Ví dụ đang chạy C# ở máy ảo: http://10.0.2.2:5000/
-    ApiService apiService = new Retrofit.Builder()
-            .baseUrl("http://192.168.1.184:5103/") // <-- SỬA PORT Ở ĐÂY CHO ĐÚNG VỚI VISUAL STUDIO CỦA BẠN
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
-            .create(ApiService.class);
 
     // ==========================================
     // 2. CÁC ĐƯỜNG DẪN API (Của bạn giữ nguyên)
@@ -122,4 +115,7 @@ public interface ApiService {
 
     @DELETE("api/Addresses/{id}")
     Call<Void> deleteAddress(@Path("id") int id);
+    // Thay đổi từ Call<String> thành Call<okhttp3.ResponseBody>
+    @GET("api/Payment/get-vnpay-url")
+    Call<okhttp3.ResponseBody> getVnpayUrl(@Query("amount") double amount);
 }
