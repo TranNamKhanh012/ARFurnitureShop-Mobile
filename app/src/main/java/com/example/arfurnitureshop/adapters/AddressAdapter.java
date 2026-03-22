@@ -1,5 +1,8 @@
 package com.example.arfurnitureshop.adapters;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,9 +44,31 @@ public class AddressAdapter extends RecyclerView.Adapter<AddressAdapter.AddressV
         holder.tvFullAddress.setText(address.getFullAddress());
         holder.tvDefaultBadge.setVisibility(address.isDefault() ? View.VISIBLE : View.GONE);
 
-        // Kích hoạt sự kiện bấm
+        // Kích hoạt sự kiện bấm Sửa / Xóa
         holder.btnEdit.setOnClickListener(v -> listener.onEdit(address));
         holder.btnDelete.setOnClickListener(v -> listener.onDelete(address));
+
+        // ==========================================
+        // THÊM MỚI: BẮT SỰ KIỆN BẤM CHỌN ĐỊA CHỈ
+        // ==========================================
+        holder.itemView.setOnClickListener(v -> {
+            Context context = v.getContext();
+
+            if (context instanceof Activity) {
+                Activity activity = (Activity) context;
+
+                // Kiểm tra cờ xem có phải đang mở từ CheckoutActivity không
+                boolean isSelectionMode = activity.getIntent().getBooleanExtra("IS_SELECTION_MODE", false);
+
+                if (isSelectionMode) {
+                    // Nếu đúng: Đóng gói địa chỉ này, trả về cho Checkout và kết thúc trang My Addresses
+                    Intent returnIntent = new Intent();
+                    returnIntent.putExtra("SELECTED_ADDRESS", address);
+                    activity.setResult(Activity.RESULT_OK, returnIntent);
+                    activity.finish();
+                }
+            }
+        });
     }
 
     @Override

@@ -118,4 +118,9 @@ public interface ApiService {
     // Thay đổi từ Call<String> thành Call<okhttp3.ResponseBody>
     @GET("api/Payment/get-vnpay-url")
     Call<okhttp3.ResponseBody> getVnpayUrl(@Query("amount") double amount);
+    // THÊM ĐƯỜNG DẪN CHÍNH XÁC CỦA MODEL VÀO TRƯỚC TÊN BIẾN
+    @POST("api/Orders/create")
+    Call<okhttp3.ResponseBody> createOrder(@Body com.example.arfurnitureshop.models.OrderRequestDto orderDto);
+    // Lấy danh sách địa chỉ của User
+
 }

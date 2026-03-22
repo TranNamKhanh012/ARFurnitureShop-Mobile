@@ -1,6 +1,6 @@
 package com.example.arfurnitureshop.models;
 
-public class UserAddress {
+public class UserAddress implements java.io.Serializable{
     private int id;
     private int userId;
     private String receiverName;
