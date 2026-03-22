@@ -44,6 +44,7 @@
             android:text="₫ 266,000 VND"
             android:textColor="#333333"
             android:textSize="14sp"
+            android:lineSpacingExtra="4dp"
             app:layout_constraintStart_toStartOf="@id/tvCartProductName"
             app:layout_constraintTop_toBottomOf="@id/tvCartProductName" />
 
@@ -58,6 +59,19 @@
             android:paddingVertical="4dp"
             app:layout_constraintStart_toStartOf="@id/tvCartProductName"
             app:layout_constraintTop_toBottomOf="@id/tvCartProductPrice">
+
+            <TextView
+                android:id="@+id/tvCartItemSize"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Size: 42"
+                android:textColor="#FF5722"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginTop="2dp"
+                android:visibility="gone"
+                app:layout_constraintStart_toStartOf="@id/tvCartProductName"
+                app:layout_constraintTop_toBottomOf="@id/tvCartProductPrice" />
 
             <TextView
                 android:id="@+id/tvMinus"

@@ -91,18 +91,51 @@ public class CheckoutActivity extends AppCompatActivity {
         ivBack.setOnClickListener(v -> finish());
 
         // ==========================================
-        // 2. NẠP DỮ LIỆU ĐƠN HÀNG (SỐ TIỀN & SẢN PHẨM)
+        // 2. NẠP DỮ LIỆU ĐƠN HÀNG (SẢN PHẨM & TỰ TÍNH LẠI TIỀN)
         // ==========================================
-        totalAmount = getIntent().getDoubleExtra("TOTAL_PRICE", 0);
+        boolean isBuyNow = getIntent().getBooleanExtra("IS_BUY_NOW", false);
+
+        if (isBuyNow) {
+            // NẾU LÀ MUA NGAY: Tạo một giỏ hàng ảo chỉ chứa đúng 1 sản phẩm
+            cartItems = new ArrayList<>();
+            com.example.arfurnitureshop.models.Product p = new com.example.arfurnitureshop.models.Product();
+            p.setId(getIntent().getIntExtra("BUY_NOW_ID", 0));
+            p.setName(getIntent().getStringExtra("BUY_NOW_NAME"));
+            p.setPrice(getIntent().getDoubleExtra("BUY_NOW_PRICE", 0));
+            p.setImageUrl(getIntent().getStringExtra("BUY_NOW_IMAGE"));
+
+            // [QUAN TRỌNG] Nhận % giảm giá
+            p.setDiscount(getIntent().getIntExtra("BUY_NOW_DISCOUNT", 0));
+
+            int qty = getIntent().getIntExtra("BUY_NOW_QTY", 1);
+            String size = getIntent().getStringExtra("BUY_NOW_SIZE");
+            if (size == null) size = "";
+
+            cartItems.add(new CartItem(p, qty, size));
+        } else {
+            // NẾU TỪ GIỎ HÀNG: Lấy dữ liệu từ SQLite
+            cartItems = CartManager.getInstance(this).getItems();
+        }
+
+        // [TUYỆT CHIÊU]: TỰ ĐỘNG QUÉT LẠI GIỎ HÀNG VÀ TÍNH TỔNG TIỀN ĐÃ GIẢM
+        totalAmount = 0;
+        for (CartItem item : cartItems) {
+            double finalUnitPrice = item.getProduct().getPrice(); // Lấy giá gốc
+            // Nếu có giảm giá thì trừ đi
+            if (item.getProduct().getDiscount() > 0) {
+                finalUnitPrice = finalUnitPrice - (finalUnitPrice * item.getProduct().getDiscount() / 100.0);
+            }
+            // Cộng dồn vào tổng tiền
+            totalAmount += (finalUnitPrice * item.getQuantity());
+        }
+
+        // In tổng tiền chuẩn xác 100% ra màn hình Checkout
         DecimalFormat df = new DecimalFormat("#,###");
         tvTotal.setText("₫ " + df.format(totalAmount) + " VND");
 
-        cartItems = CartManager.getInstance(this).getItems();
         rvSummary.setLayoutManager(new LinearLayoutManager(this));
-
         CartAdapter summaryAdapter = new CartAdapter(cartItems, null);
         rvSummary.setAdapter(summaryAdapter);
-
 
         // ==========================================
         // 3. TỰ ĐỘNG LẤY ĐỊA CHỈ & XỬ LÝ NÚT THAY ĐỔI
@@ -156,11 +189,19 @@ public class CheckoutActivity extends AppCompatActivity {
 
             // Chuyển CartItem -> OrderItemDto
             for (CartItem cartItem : cartItems) {
+                // TÍNH GIÁ ĐÃ GIẢM ĐỂ GỬI LÊN HÓA ĐƠN SQL
+                double finalUnitPrice = cartItem.getProduct().getPrice();
+                if (cartItem.getProduct().getDiscount() > 0) {
+                    finalUnitPrice = finalUnitPrice - (finalUnitPrice * cartItem.getProduct().getDiscount() / 100.0);
+                }
+
                 OrderRequestDto.OrderItemDto itemDto = new OrderRequestDto.OrderItemDto(
                         cartItem.getProduct().getId(),
                         cartItem.getQuantity(),
-                        cartItem.getProduct().getPrice()
+                        finalUnitPrice // TRUYỀN GIÁ ĐÃ GIẢM VÀO ĐÂY
                 );
+                itemDto.selectedSize = cartItem.getSelectedSize() != null ? cartItem.getSelectedSize() : "";
+
                 orderDto.items.add(itemDto);
             }
 
@@ -172,8 +213,10 @@ public class CheckoutActivity extends AppCompatActivity {
                     if (response.isSuccessful()) {
                         Toast.makeText(CheckoutActivity.this, "🎉 Đặt hàng thành công!", Toast.LENGTH_LONG).show();
 
-                        // Xóa sạch giỏ hàng
-                        CartManager.getInstance(CheckoutActivity.this).clear();
+                        // [MỚI] CHỈ XÓA GIỎ HÀNG NẾU KHÁCH MUA TỪ GIỎ HÀNG (Không xóa nếu mua ngay)
+                        if (!isBuyNow) {
+                            CartManager.getInstance(CheckoutActivity.this).clear();
+                        }
 
                         // Về Trang chủ
                         Intent intent = new Intent(CheckoutActivity.this, MainActivity.class);

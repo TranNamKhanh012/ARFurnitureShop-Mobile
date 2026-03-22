@@ -114,6 +114,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             intent.putExtra("PRODUCT_PRICE", product.getPrice());
             intent.putExtra("PRODUCT_IMAGE", product.getImageUrl());
             intent.putExtra("PRODUCT_MODEL", product.getModelUrl());
+            intent.putExtra("PRODUCT_SIZES", product.getSizes());
+            intent.putExtra("PRODUCT_DISCOUNT", product.getDiscount());
             context.startActivity(intent);
         });
 
@@ -226,18 +228,19 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             } else {
                 int userId = prefs.getInt("USER_ID", -1);
 
-                CartManager.getInstance(context).add(new CartItem(product, quantity[0]));
+                // 1. Lưu vào SQLite trên máy
+                CartManager.getInstance(context).add(new CartItem(product, quantity[0], ""));
                 Toast.makeText(context, "Đã thêm vào giỏ hàng!", Toast.LENGTH_SHORT).show();
 
+                // 2. GỌI API 1 LẦN DUY NHẤT (Bỏ vòng lặp for đi)
                 if (userId != -1) {
-                    for (int i = 0; i < quantity[0]; i++) {
-                        apiService.addToCart(userId, product.getId()).enqueue(new retrofit2.Callback<Void>() {
-                            @Override
-                            public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
-                            @Override
-                            public void onFailure(retrofit2.Call<Void> call, Throwable t) {}
-                        });
-                    }
+                    // Truyền đủ 4 tham số: userId, productId, quantity[0], và chuỗi rỗng "" cho size
+                    apiService.addToCart(userId, product.getId(), quantity[0], "").enqueue(new retrofit2.Callback<Void>() {
+                        @Override
+                        public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
+                        @Override
+                        public void onFailure(retrofit2.Call<Void> call, Throwable t) {}
+                    });
                 }
                 bottomSheetDialog.dismiss();
             }

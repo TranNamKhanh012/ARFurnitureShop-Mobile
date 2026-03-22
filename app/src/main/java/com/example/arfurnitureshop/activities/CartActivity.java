@@ -120,6 +120,10 @@ public class CartActivity extends AppCompatActivity {
     private void updateTotal() {
         DecimalFormat df = new DecimalFormat("#,###");
         double total = CartManager.getInstance(this).getTotal();
+
+        // [QUAN TRỌNG]: Bắt buộc phải cập nhật biến này thì nút Thanh toán mới chạy
+        currentTotal = total;
+
         tvTotal.setText("₫ " + df.format(total) + " VND");
     }
 }

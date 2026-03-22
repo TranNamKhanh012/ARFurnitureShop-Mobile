@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.arfurnitureshop.R;
-import com.example.arfurnitureshop.api.ApiService; // Import ApiService của bạn
 import com.example.arfurnitureshop.models.CartItem;
 import com.example.arfurnitureshop.utils.CartManager;
 
@@ -24,6 +23,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     private List<CartItem> list;
     private Runnable onUpdate;
     private com.example.arfurnitureshop.api.ApiService apiService;
+
     public CartAdapter(List<CartItem> list, Runnable onUpdate) {
         this.list = list;
         this.onUpdate = onUpdate;
@@ -41,17 +41,73 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
     public void onBindViewHolder(@NonNull CartViewHolder h, int pos) {
         CartItem i = list.get(pos);
         DecimalFormat df = new DecimalFormat("#,###");
+
         h.name.setText(i.getProduct().getName());
-        h.price.setText("₫ " + df.format(i.getProduct().getPrice()) + " VND");
-        h.qty.setText(String.valueOf(i.getQuantity()));
         // ========================================================
-        // 1. CHUẨN BỊ LINK VÀ CHÌA KHÓA CHO GLIDE
+        // 1. TÍNH TOÁN VÀ VẼ GIÁ (GẠCH NGANG NẾU CÓ GIẢM GIÁ)
+        // ========================================================
+        // ========================================================
+        // 1. TÍNH TOÁN VÀ VẼ GIÁ (GẠCH NGANG TRÊN - GIẢM GIÁ DƯỚI)
+        // ========================================================
+        double originalPrice = i.getProduct().getPrice();
+        int discount = i.getProduct().getDiscount();
+        double finalPrice = originalPrice;
+        if (discount > 0) {
+            finalPrice = originalPrice - (originalPrice * discount / 100.0);
+        }
+
+        if (discount > 0) {
+            // Tạo chuỗi giá định dạng
+            String oldPriceStr = "₫ " + df.format(originalPrice);
+            String newPriceStr = "₫ " + df.format(finalPrice);
+
+            // [QUAN TRỌNG]: DÙNG "\n" ĐỂ XUỐNG DÒNG
+            String fullText = oldPriceStr + "\n" + newPriceStr;
+
+            android.text.SpannableString spannable = new android.text.SpannableString(fullText);
+
+            // PHẦN 1: Giá gốc (Dòng trên)
+            // - Gạch ngang và bôi xám
+            spannable.setSpan(new android.text.style.StrikethroughSpan(), 0, oldPriceStr.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new android.text.style.ForegroundColorSpan(android.graphics.Color.GRAY), 0, oldPriceStr.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            // - Làm cho nhỏ hơn một chút (ví dụ: 85%) để đẹp hơn
+            spannable.setSpan(new android.text.style.RelativeSizeSpan(0.85f), 0, oldPriceStr.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            // PHẦN 2: Giá giảm (Dòng dưới)
+            int startOfNewPrice = oldPriceStr.length() + 1; // Bỏ qua ký tự xuống dòng "\n"
+            // - Màu đỏ và in đậm
+            spannable.setSpan(new android.text.style.ForegroundColorSpan(android.graphics.Color.RED), startOfNewPrice, fullText.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), startOfNewPrice, fullText.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            // - Làm cho lớn hơn một chút (ví dụ: 110%) để nổi bật
+            spannable.setSpan(new android.text.style.RelativeSizeSpan(1.1f), startOfNewPrice, fullText.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            h.price.setText(spannable);
+        } else {
+            // Trường hợp không giảm giá (Vẫn hiện 1 dòng giá màu đỏ)
+            h.price.setText("₫ " + df.format(originalPrice) + " VND");
+            h.price.setTextColor(android.graphics.Color.RED);
+            h.price.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 16); // Đặt size gốc
+        }
+        h.qty.setText(String.valueOf(i.getQuantity()));
+
+        // ========================================================
+        // 1. XỬ LÝ HIỆN SIZE (NẾU CÓ)
+        // ========================================================
+        if (i.getSelectedSize() != null && !i.getSelectedSize().trim().isEmpty()) {
+            h.size.setVisibility(View.VISIBLE);
+            h.size.setText("Size: " + i.getSelectedSize());
+        } else {
+            h.size.setVisibility(View.GONE); // Nếu là kính/bàn ghế không có size thì ẩn đi
+        }
+
+        // ========================================================
+        // 2. CHUẨN BỊ LINK VÀ CHÌA KHÓA CHO GLIDE
         // ========================================================
         android.content.Context context = h.itemView.getContext();
         String fullImageUrl = "http://trannamkhanh-001-site1.jtempurl.com/images/" + i.getProduct().getImageUrl();
 
-        String userCam = "TÊN_ĐĂNG_NHẬP_MÀU_CAM"; // <-- Nhớ thay bằng User màu cam của bạn
-        String passCam = "MẬT_KHẨU_MÀU_CAM";      // <-- Nhớ thay bằng Pass màu cam của bạn
+        String userCam = "11300735"; // <-- Nhớ thay bằng User màu cam của bạn
+        String passCam = "60-dayfreetrial";      // <-- Nhớ thay bằng Pass màu cam của bạn
         String credential = okhttp3.Credentials.basic(userCam, passCam);
 
         com.bumptech.glide.load.model.GlideUrl glideUrlWithAuth = new com.bumptech.glide.load.model.GlideUrl(fullImageUrl,
@@ -59,7 +115,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                         .addHeader("Authorization", credential)
                         .build());
 
-        // 2. TẢI ẢNH VÀO BIẾN h.img CỦA BẠN
+        // 3. TẢI ẢNH VÀO BIẾN h.img CỦA BẠN
         Glide.with(context)
                 .load(glideUrlWithAuth)
                 .placeholder(R.drawable.ic_launcher_background)
@@ -69,7 +125,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         // Nút Tăng số lượng
         h.plus.setOnClickListener(v -> {
             i.setQuantity(i.getQuantity() + 1);
-            CartManager.getInstance(v.getContext()).add(i);
+            CartManager.getInstance(context).add(i); // Đã update để hỗ trợ size
             notifyDataSetChanged();
             onUpdate.run();
         });
@@ -78,7 +134,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         h.minus.setOnClickListener(v -> {
             if (i.getQuantity() > 1) {
                 i.setQuantity(i.getQuantity() - 1);
-                CartManager.getInstance(v.getContext()).add(i);
+                CartManager.getInstance(context).add(i); // Đã update để hỗ trợ size
                 notifyDataSetChanged();
                 onUpdate.run();
             }
@@ -91,22 +147,22 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             int currentPos = h.getAdapterPosition();
             if (currentPos == RecyclerView.NO_POSITION) return;
 
-            // 1. Mở bộ nhớ ra lấy ID của người dùng đang đăng nhập
-            // [ĐÃ SỬA]: Xóa dòng khai báo context bị trùng ở đây đi
-            // Cứ thế dùng luôn chữ "context" (nó sẽ tự lấy biến context từ chỗ Glide thả xuống)
             android.content.SharedPreferences prefs = context.getSharedPreferences("UserPrefs", android.content.Context.MODE_PRIVATE);
             int userId = prefs.getInt("USER_ID", -1);
             int productId = i.getProduct().getId();
 
-            // 2. Xóa ở giao diện và CartManager nội bộ trước...
-            CartManager.getInstance(context).remove(productId);
+            // [QUAN TRỌNG]: Đã thêm getSelectedSize() vào để xóa đúng loại size
+            CartManager.getInstance(context).remove(productId, i.getSelectedSize());
+
             list.remove(currentPos);
             notifyItemRemoved(currentPos);
             onUpdate.run();
 
-            // 3. GỌI API XÓA KHỎI DATABASE SQL SERVER
+            // GỌI API XÓA KHỎI DATABASE SQL SERVER (Đã thêm biến Size)
             if (userId != -1) {
-                apiService.removeFromCart(userId, productId).enqueue(new retrofit2.Callback<Void>() {
+                String sizeToSend = i.getSelectedSize() != null ? i.getSelectedSize() : "";
+
+                apiService.removeFromCart(userId, productId, sizeToSend).enqueue(new retrofit2.Callback<Void>() {
                     @Override
                     public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
 
@@ -124,7 +180,8 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
     class CartViewHolder extends RecyclerView.ViewHolder {
         ImageView img, del;
-        TextView name, price, qty, plus, minus;
+        // ĐÃ SỬA: Bổ sung khai báo biến "size" ở đây để hết lỗi đỏ
+        TextView name, price, qty, plus, minus, size;
 
         public CartViewHolder(View v) {
             super(v);
@@ -135,6 +192,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             qty = v.findViewById(R.id.tvQuantity);
             plus = v.findViewById(R.id.tvPlus);
             minus = v.findViewById(R.id.tvMinus);
+            size = v.findViewById(R.id.tvCartItemSize); // Hết lỗi đỏ rồi nhé!
         }
     }
 }

@@ -30,8 +30,9 @@ public class CartManager {
         return dbHelper.getAllItems();
     }
 
-    public void remove(int id) {
-        dbHelper.deleteItem(id);
+    // Thêm tham số size vào để xóa cho chuẩn xác
+    public void remove(int id, String size) {
+        dbHelper.deleteItem(id, size);
     }
 
     // Hàm tính tổng tiền cho màn hình CartActivity

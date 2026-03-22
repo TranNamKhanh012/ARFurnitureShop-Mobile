@@ -17,6 +17,7 @@ public class OrderRequestDto {
         public int productId;
         public int quantity;
         public double unitPrice;
+        public String selectedSize;
 
         // Constructor nhanh
         public OrderItemDto(int productId, int quantity, double unitPrice) {

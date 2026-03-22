@@ -32,6 +32,11 @@ public class Product {
 
     @SerializedName("dateAdded")
     private String dateAdded;
+    @SerializedName("sizes")
+    private String sizes;
+
+    public String getSizes() { return sizes; }
+    public void setSizes(String sizes) { this.sizes = sizes; }
 
     // 1. Hàm khởi tạo không tham số
     public Product() {

@@ -55,12 +55,26 @@ public interface ApiService {
     // Lấy giỏ hàng phải dùng List<CartItem> (để hứng được cả Số lượng)
     @GET("api/Cart/{userId}")
     Call<List<com.example.arfurnitureshop.models.CartItem>> getCart(@Path("userId") int userId);
-    @POST("api/Cart/{userId}/{productId}")
-    Call<Void> addToCart(@Path("userId") int userId, @Path("productId") int productId);
+    // =========================================
+    // 1. THÊM VÀO GIỎ HÀNG (Kèm Số lượng & Size)
+    // =========================================
+    @POST("api/Cart/add")
+    Call<Void> addToCart(
+            @Query("userId") int userId,
+            @Query("productId") int productId,
+            @Query("quantity") int quantity,
+            @Query("selectedSize") String selectedSize
+    );
 
-    @DELETE("api/Cart/{userId}/{productId}")
-    Call<Void> removeFromCart(@Path("userId") int userId, @Path("productId") int productId);
-
+    // =========================================
+    // 2. XÓA KHỎI GIỎ HÀNG (Kèm Size để xóa cho đúng)
+    // =========================================
+    @DELETE("api/Cart/remove")
+    Call<Void> removeFromCart(
+            @Query("userId") int userId,
+            @Query("productId") int productId,
+            @Query("selectedSize") String selectedSize
+    );
     // API Authentication
     @POST("api/Auth/login")
     Call<com.example.arfurnitureshop.models.User> login(@retrofit2.http.Body com.example.arfurnitureshop.models.User user);

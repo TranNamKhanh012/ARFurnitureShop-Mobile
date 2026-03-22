@@ -12,13 +12,12 @@ import java.util.List;
 
 public class CartDatabaseHelper extends SQLiteOpenHelper {
     public CartDatabaseHelper(Context context) {
-        super(context, "CartDB", null, 1);
+        super(context, "CartDB", null, 3); // Lên version 3 để lưu Discount
     }
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Tạo bảng giỏ hàng
-        db.execSQL("CREATE TABLE cart(id INTEGER PRIMARY KEY, name TEXT, price REAL, image TEXT, quantity INTEGER)");
+        db.execSQL("CREATE TABLE cart(id INTEGER, name TEXT, price REAL, image TEXT, quantity INTEGER, size TEXT, discount INTEGER, PRIMARY KEY(id, size))");
     }
 
     @Override
@@ -27,22 +26,21 @@ public class CartDatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    // Hàm Thêm hoặc Cập nhật số lượng
     public void addOrUpdateItem(CartItem item) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues v = new ContentValues();
         v.put("id", item.getProduct().getId());
         v.put("name", item.getProduct().getName());
-        v.put("price", item.getProduct().getPrice());
+        v.put("price", item.getProduct().getPrice()); // LƯU GIÁ GỐC
         v.put("image", item.getProduct().getImageUrl());
         v.put("quantity", item.getQuantity());
+        v.put("size", item.getSelectedSize() != null ? item.getSelectedSize() : "");
+        v.put("discount", item.getProduct().getDiscount()); // LƯU % GIẢM GIÁ
 
-        // CONFLICT_REPLACE: Nếu trùng ID sản phẩm thì ghi đè số lượng mới
         db.insertWithOnConflict("cart", null, v, SQLiteDatabase.CONFLICT_REPLACE);
         db.close();
     }
 
-    // Hàm Lấy toàn bộ giỏ hàng
     public List<CartItem> getAllItems() {
         List<CartItem> list = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
@@ -50,38 +48,33 @@ public class CartDatabaseHelper extends SQLiteOpenHelper {
 
         if (c.moveToFirst()) {
             do {
-                // ==========================================
-                // ĐÃ SỬA LỖI Ở ĐÂY: Dùng Constructor rỗng và Setter
-                // ==========================================
                 Product p = new Product();
-                p.setId(c.getInt(0));         // id
-                p.setName(c.getString(1));       // name
-                p.setPrice(c.getDouble(2));      // price
-                p.setImageUrl(c.getString(3));   // image
-
-                // Các giá trị không lưu trong SQLite thì gán mặc định
-                p.setModelUrl("");
-                p.setDiscount(0);
+                p.setId(c.getInt(0));
+                p.setName(c.getString(1));
+                p.setPrice(c.getDouble(2)); // Lấy giá gốc
+                p.setImageUrl(c.getString(3));
                 p.setRating(5.0);
+                p.setDiscount(c.getInt(6)); // Lấy % giảm giá (Cột 6)
 
-                // Thêm vào danh sách giỏ hàng (c.getInt(4) là quantity)
-                list.add(new CartItem(p, c.getInt(4)));
+                String size = c.getString(5);
+                list.add(new CartItem(p, c.getInt(4), size));
             } while (c.moveToNext());
         }
         c.close();
         db.close();
         return list;
     }
-    // Hàm Xóa sản phẩm khỏi giỏ
-    public void deleteItem(int id) {
+
+    public void deleteItem(int id, String size) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete("cart", "id=?", new String[]{String.valueOf(id)});
+        if(size == null) size = "";
+        db.delete("cart", "id=? AND size=?", new String[]{String.valueOf(id), size});
         db.close();
     }
-    // Hàm dọn sạch toàn bộ giỏ hàng trong SQLite
+
     public void clearCart() {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.execSQL("DELETE FROM cart"); // Xóa toàn bộ dữ liệu trong bảng cart
+        db.execSQL("DELETE FROM cart");
         db.close();
     }
 }

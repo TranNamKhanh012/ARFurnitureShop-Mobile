@@ -42,6 +42,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private RecyclerView rvRecommended;
     private ProductAdapter recommendedAdapter;
+    private String selectedSize = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,23 +77,92 @@ public class ProductDetailActivity extends AppCompatActivity {
         // ==========================================
         int productId = getIntent().getIntExtra("PRODUCT_ID", -1);
         String name = getIntent().getStringExtra("PRODUCT_NAME");
-        double price = getIntent().getDoubleExtra("PRODUCT_PRICE", 0);
+        double originalPrice = getIntent().getDoubleExtra("PRODUCT_PRICE", 0);
         String imageUrl = getIntent().getStringExtra("PRODUCT_IMAGE");
         String modelUrl = getIntent().getStringExtra("PRODUCT_MODEL");
+
+        // Nhận thêm % giảm giá từ Adapter truyền sang
+        int discount = getIntent().getIntExtra("PRODUCT_DISCOUNT", 0);
 
         currentProduct = new Product();
         currentProduct.setId(productId);
         currentProduct.setName(name);
         currentProduct.setImageUrl(imageUrl);
         currentProduct.setModelUrl(modelUrl);
-        currentProduct.setPrice(price);
-        currentProduct.setDiscount(0); // Mặc định nếu không có dữ liệu
+        currentProduct.setPrice(originalPrice);
+        currentProduct.setDiscount(discount); // Lưu discount chuẩn
         currentProduct.setRating(5.0);
 
         if (name != null) tvProductName.setText(name);
 
-        NumberFormat formatVN = NumberFormat.getCurrencyInstance(new Locale("vi", "VN"));
-        tvProductPrice.setText(formatVN.format(price));
+        // --- TÍNH TOÁN GIÁ SAU KHI GIẢM ---
+        double finalPrice = originalPrice;
+        if (discount > 0) {
+            finalPrice = originalPrice - (originalPrice * discount / 100.0);
+        }
+
+        // --- VẼ GIÁ GẠCH NGANG TRỰC TIẾP LÊN MÀN HÌNH ---
+        java.text.NumberFormat formatVN = java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("vi", "VN"));
+        if (discount > 0) {
+            String oldPriceStr = formatVN.format(originalPrice);
+            String newPriceStr = formatVN.format(finalPrice);
+            String fullText = oldPriceStr + "   " + newPriceStr;
+
+            android.text.SpannableString spannable = new android.text.SpannableString(fullText);
+
+            // Gạch ngang và bôi xám giá cũ
+            spannable.setSpan(new android.text.style.StrikethroughSpan(), 0, oldPriceStr.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new android.text.style.ForegroundColorSpan(android.graphics.Color.GRAY), 0, oldPriceStr.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            // In đậm và tô đỏ giá mới
+            spannable.setSpan(new android.text.style.ForegroundColorSpan(android.graphics.Color.RED), oldPriceStr.length() + 3, fullText.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            spannable.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), oldPriceStr.length() + 3, fullText.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+            tvProductPrice.setText(spannable);
+        } else {
+            tvProductPrice.setText(formatVN.format(originalPrice));
+            tvProductPrice.setTextColor(android.graphics.Color.RED);
+        }
+
+        // KHUNG XỬ LÝ SIZE
+        android.widget.LinearLayout layoutSizeSelection = findViewById(R.id.layoutSizeSelection);
+        android.widget.Spinner spinnerSizes = findViewById(R.id.spinnerSizes);
+        String sizesString = getIntent().getStringExtra("PRODUCT_SIZES");
+
+        if (sizesString != null && !sizesString.trim().isEmpty()) {
+            layoutSizeSelection.setVisibility(android.view.View.VISIBLE);
+            String[] sizesArray = sizesString.split(",");
+            java.util.List<String> sizesList = new java.util.ArrayList<>();
+            for(String s : sizesArray) sizesList.add(s.trim());
+
+            android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sizesList);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerSizes.setAdapter(adapter);
+
+            spinnerSizes.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+                    selectedSize = sizesList.get(position);
+                }
+                @Override
+                public void onNothingSelected(android.widget.AdapterView<?> parent) { }
+            });
+        } else if (name != null && name.toLowerCase().contains("giày")) {
+            // BACKUP: Nếu API C# chưa kịp cập nhật nhưng tên là "Giày" thì tự mọc ra Size
+            layoutSizeSelection.setVisibility(android.view.View.VISIBLE);
+            String[] defaultSizes = {"39", "40", "41", "42", "43"};
+            android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_item, defaultSizes);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerSizes.setAdapter(adapter);
+            spinnerSizes.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+                    selectedSize = defaultSizes[position];
+                }
+                @Override
+                public void onNothingSelected(android.widget.AdapterView<?> parent) { }
+            });
+        }
 
         // 1. Đã đổi tên biến thành imageName để tránh bị trùng lặp
         String imageName = getIntent().getStringExtra("PRODUCT_IMAGE");
@@ -143,6 +213,7 @@ public class ProductDetailActivity extends AppCompatActivity {
         ivCartTop.setOnClickListener(v -> startActivity(new Intent(ProductDetailActivity.this, CartActivity.class)));
 
         // Nút thêm vào giỏ
+        // Nút thêm vào giỏ
         btnAddToCart.setOnClickListener(v -> {
             android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
             boolean isLoggedIn = prefs.getBoolean("IS_LOGGED_IN", false);
@@ -153,19 +224,18 @@ public class ProductDetailActivity extends AppCompatActivity {
             } else {
                 int userId = prefs.getInt("USER_ID", -1);
 
-                // DÙNG BIẾN selectedQuantity VÀO ĐÂY ĐỂ THÊM ĐÚNG SỐ LƯỢNG KHÁCH CHỌN
-                CartManager.getInstance(ProductDetailActivity.this).add(new CartItem(currentProduct, selectedQuantity));
+                // 1. Lưu vào SQLite trên máy (như cũ)
+                CartManager.getInstance(ProductDetailActivity.this).add(new CartItem(currentProduct, selectedQuantity, selectedSize));
                 Toast.makeText(ProductDetailActivity.this, "Đã thêm " + selectedQuantity + " " + currentProduct.getName() + " vào giỏ!", Toast.LENGTH_SHORT).show();
 
-                // Gửi lên C#
-                for (int i = 0; i < selectedQuantity; i++) {
-                    apiService.addToCart(userId, productId).enqueue(new retrofit2.Callback<Void>() {
-                        @Override
-                        public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
-                        @Override
-                        public void onFailure(retrofit2.Call<Void> call, Throwable t) {}
-                    });
-                }
+                // 2. GỌI API 1 LẦN DUY NHẤT (Gửi kèm số lượng và Size)
+                String finalSize = selectedSize != null ? selectedSize : ""; // Tránh gửi null
+                apiService.addToCart(userId, productId, selectedQuantity, finalSize).enqueue(new retrofit2.Callback<Void>() {
+                    @Override
+                    public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
+                    @Override
+                    public void onFailure(retrofit2.Call<Void> call, Throwable t) {}
+                });
             }
         });
 
@@ -173,7 +243,6 @@ public class ProductDetailActivity extends AppCompatActivity {
         // 5. XỬ LÝ NÚT BUY NOW: THANH TOÁN LUÔN
         // ==========================================
         btnBuyNow.setOnClickListener(v -> {
-            // 1. Kiểm tra đăng nhập trước khi cho mua (giống nút Add to Cart)
             android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
             boolean isLoggedIn = prefs.getBoolean("IS_LOGGED_IN", false);
 
@@ -181,17 +250,24 @@ public class ProductDetailActivity extends AppCompatActivity {
                 Toast.makeText(ProductDetailActivity.this, "Vui lòng đăng nhập để mua hàng!", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(ProductDetailActivity.this, LoginActivity.class));
             } else {
-                // 2. Tính tổng tiền = Giá x Số lượng đã chọn
                 double totalPrice = currentProduct.getPrice() * selectedQuantity;
 
-                // 3. Chuyển sang trang Checkout và gửi kèm số tiền
                 Intent intent = new Intent(ProductDetailActivity.this, CheckoutActivity.class);
-                intent.putExtra("TOTAL_PRICE", totalPrice); // Gửi tổng tiền để CheckoutActivity nhận
-                intent.putExtra("PRODUCT_NAME", currentProduct.getName()); // (Tùy chọn) Gửi tên để hiển thị
+                intent.putExtra("TOTAL_PRICE", totalPrice);
+
+                // [MỚI] GỬI CỜ BÁO HIỆU ĐÂY LÀ "MUA NGAY" KÈM CHI TIẾT SẢN PHẨM
+                intent.putExtra("IS_BUY_NOW", true);
+                intent.putExtra("BUY_NOW_ID", currentProduct.getId());
+                intent.putExtra("BUY_NOW_NAME", currentProduct.getName());
+                intent.putExtra("BUY_NOW_PRICE", currentProduct.getPrice());
+                intent.putExtra("BUY_NOW_IMAGE", currentProduct.getImageUrl());
+                intent.putExtra("BUY_NOW_QTY", selectedQuantity);
+                intent.putExtra("BUY_NOW_DISCOUNT", currentProduct.getDiscount());
+
+                // Lưu ý: Nếu code của bạn có biến selectedSize cho Giày thì thay "" bằng biến đó nhé!
+                intent.putExtra("BUY_NOW_SIZE", "");
 
                 startActivity(intent);
-
-                Toast.makeText(this, "Đang chuẩn bị thanh toán cho " + selectedQuantity + " sản phẩm...", Toast.LENGTH_SHORT).show();
             }
         });
 
