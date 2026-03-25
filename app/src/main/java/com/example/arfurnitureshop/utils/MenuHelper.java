@@ -48,6 +48,10 @@ public class MenuHelper {
                     Intent intent = new Intent(activity, SettingsActivity.class);
                     activity.startActivity(intent);
                 }
+                else if (id == R.id.nav_order_history) { // <--- Đổi R.id.nav_history thành đúng ID trong file drawer_menu.xml của bạn
+                    Intent intent = new Intent(activity, com.example.arfurnitureshop.activities.OrderHistoryActivity.class);
+                    activity.startActivity(intent);
+                }
                 // ==========================================
                 // ĐÃ THÊM: Xử lý khi bấm nút Liên hệ
                 // ==========================================

@@ -230,37 +230,19 @@
                     android:layout_marginTop="12dp">
 
                     <TextView
-                        android:id="@+id/tvReviewerName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Thao"
-                        android:textColor="#333"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:text="★★★★★"
-                        android:textColor="#FFC107" />
-
-                    <TextView
-                        android:id="@+id/tvReviewContent"
+                        android:id="@+id/tvEmptyReviews"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_below="@id/tvReviewerName"
-                        android:layout_marginTop="4dp"
-                        android:text="Great quality, perfectly fits my room design. Highly recommended!"
-                        android:textColor="#555" />
+                        android:text="Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá sản phẩm này!"
+                        android:gravity="center"
+                        android:padding="16dp"
+                        android:visibility="gone"/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvProductReviews"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_below="@id/tvReviewContent"
-                        android:layout_marginTop="4dp"
-                        android:text="Oct 20, 2025"
-                        android:textColor="#999"
-                        android:textSize="12sp" />
+                        android:nestedScrollingEnabled="false" />
                 </RelativeLayout>
             </LinearLayout>
 

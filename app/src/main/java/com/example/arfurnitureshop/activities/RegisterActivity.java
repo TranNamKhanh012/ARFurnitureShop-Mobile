@@ -1,5 +1,6 @@
 package com.example.arfurnitureshop.activities;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -12,6 +13,7 @@ import com.example.arfurnitureshop.R;
 import com.example.arfurnitureshop.api.ApiService;
 import com.example.arfurnitureshop.api.RetrofitClient;
 import com.example.arfurnitureshop.models.User;
+import com.google.gson.JsonObject;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -19,11 +21,13 @@ import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
     private ApiService apiService;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        // Khởi tạo API Service 1 lần duy nhất
         apiService = RetrofitClient.getClient().create(ApiService.class);
 
         EditText etUser = findViewById(R.id.etRegUsername);
@@ -38,32 +42,42 @@ public class RegisterActivity extends AppCompatActivity {
             String name = etName.getText().toString().trim();
             String email = etEmail.getText().toString().trim();
 
-            if (user.isEmpty() || pass.isEmpty()) {
-                Toast.makeText(this, "Vui lòng nhập Tài khoản và Mật khẩu!", Toast.LENGTH_SHORT).show();
+            if (user.isEmpty() || pass.isEmpty() || name.isEmpty() || email.isEmpty()) {
+                Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             User newUser = new User(user, pass, name, email);
 
-            // Khởi tạo ở onCreate
-            apiService = RetrofitClient.getClient().create(ApiService.class);
+            // Hiện thông báo đang xử lý
+            ProgressDialog pd = new ProgressDialog(RegisterActivity.this);
+            pd.setMessage("Đang tạo tài khoản...");
+            pd.show();
 
-// Khi bấm nút Register
-            apiService.register(newUser).enqueue(new Callback<Void>() {
+            // Gọi API
+            apiService.register(newUser).enqueue(new Callback<JsonObject>() {
                 @Override
-                public void onResponse(Call<Void> call, Response<Void> response) {
+                public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
+                    pd.dismiss(); // Tắt thông báo đang xử lý
+
                     if (response.isSuccessful()) {
-                        // CHỈ KHI VÀO ĐÂY THÌ DỮ LIỆU MỚI CÓ TRÊN DATABASE
-                        Toast.makeText(RegisterActivity.this, "Đã lưu lên Cloud!", Toast.LENGTH_SHORT).show();
+                        // Backend trả về mã 200 OK (Đăng ký thành công)
+                        Toast.makeText(RegisterActivity.this, "🎉 Đăng ký thành công!", Toast.LENGTH_LONG).show();
+
+                        // Đóng trang đăng ký, quay trở lại trang đăng nhập
+                        finish();
                     } else {
-                        // Lỗi từ phía Server (ví dụ: trùng Username)
+                        // Backend trả về lỗi (Ví dụ: mã 400 - Trùng tên đăng nhập)
+                        // Trong C# bạn viết: return BadRequest(new { message = "Tên đăng nhập đã tồn tại!" });
+                        Toast.makeText(RegisterActivity.this, "Tên đăng nhập đã tồn tại, vui lòng chọn tên khác!", Toast.LENGTH_LONG).show();
                         Log.e("API_ERROR", "Mã lỗi: " + response.code());
                     }
                 }
 
                 @Override
-                public void onFailure(Call<Void> call, Throwable t) {
-                    // Lỗi kết nối (Mất mạng hoặc sai địa chỉ IP/Domain)
+                public void onFailure(Call<JsonObject> call, Throwable t) {
+                    pd.dismiss();
+                    Toast.makeText(RegisterActivity.this, "Lỗi kết nối Server!", Toast.LENGTH_SHORT).show();
                     Log.e("API_FAILURE", t.getMessage());
                 }
             });

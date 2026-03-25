@@ -74,6 +74,16 @@ public class MainActivity extends AppCompatActivity {
             MenuHelper.setupMenu(this, drawerLayout, ivMenu, navigationView);
         }
 
+        // --- CODE ĐIỀU KHIỂN CHUÔNG THÔNG BÁO ---
+        android.widget.FrameLayout layoutNotificationBell = findViewById(R.id.layoutNotificationBell);
+
+        if (layoutNotificationBell != null) {
+            layoutNotificationBell.setOnClickListener(v -> {
+                android.content.Intent intent = new android.content.Intent(MainActivity.this, PendingReviewsActivity.class);
+                startActivity(intent);
+            });
+        }
+
         // --- 4. XỬ LÝ NÚT "SEE ALL" ---
         if (tvSeeAllBestSellers != null) {
             tvSeeAllBestSellers.setOnClickListener(v -> {
@@ -190,6 +200,36 @@ public class MainActivity extends AppCompatActivity {
         if (productAdapter != null) {
             productAdapter.notifyDataSetChanged();
         }
+
+        // GỌI HÀM KIỂM TRA CHUÔNG THÔNG BÁO ĐÁNH GIÁ Ở ĐÂY
+        checkPendingReviews();
+    }
+
+    private void checkPendingReviews() {
+        android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        int userId = prefs.getInt("USER_ID", -1);
+        if (userId == -1) return;
+
+        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        apiService.getPendingReviews(userId).enqueue(new retrofit2.Callback<java.util.List<com.example.arfurnitureshop.models.Product>>() {
+            @Override
+            public void onResponse(retrofit2.Call<java.util.List<com.example.arfurnitureshop.models.Product>> call, retrofit2.Response<java.util.List<com.example.arfurnitureshop.models.Product>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    int pendingCount = response.body().size();
+                    android.widget.TextView tvBadge = findViewById(R.id.tvNotificationBadge);
+
+                    if (pendingCount > 0) {
+                        tvBadge.setVisibility(android.view.View.VISIBLE);
+                        tvBadge.setText(String.valueOf(pendingCount));
+                    } else {
+                        tvBadge.setVisibility(android.view.View.GONE);
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<java.util.List<com.example.arfurnitureshop.models.Product>> call, Throwable t) {}
+        });
     }
 
     private void syncDataFromServer() {

@@ -177,6 +177,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     }
 
     // HÀM HIỂN THỊ CỬA SỔ BOTTOM SHEET
+    // HÀM HIỂN THỊ CỬA SỔ BOTTOM SHEET
     private void showAddToCartBottomSheet(Context context, Product product, String initialPriceFormatted) {
         BottomSheetDialog bottomSheetDialog = new BottomSheetDialog(context);
         View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_add_to_cart, null);
@@ -191,16 +192,67 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         Button btnAddCartDialog = dialogView.findViewById(R.id.dialogBtnAddToCart);
         Button btnBuyNow = dialogView.findViewById(R.id.dialogBtnBuyNow);
 
+        // ==========================================
+        // 1. ÁNH XẠ CÁC VIEW MỚI CHO SIZE TỪ XML
+        // ==========================================
+        android.widget.LinearLayout layoutSize = dialogView.findViewById(R.id.dialogLayoutSizeSelection);
+        android.widget.Spinner spinnerSize = dialogView.findViewById(R.id.dialogSpinnerSize);
+        final String[] selectedDialogSize = {""}; // Mảng 1 phần tử để lưu size được chọn
+
+        // ==========================================
+        // 2. LOGIC HIỂN THỊ SPINNER NẾU LÀ GIÀY
+        // ==========================================
+        if (product.getName() != null && product.getName().toLowerCase().contains("giày")) {
+            layoutSize.setVisibility(View.VISIBLE);
+
+            // Nếu API có trả về danh sách size thực tế từ bảng ProductSizes (product.getSizes()),
+            // bạn có thể lấy danh sách đó. Ở đây mình dùng mảng mẫu:
+            String[] defaultSizes = {"39", "40", "41", "42", "43"};
+
+            android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(
+                    context, android.R.layout.simple_spinner_item, defaultSizes);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerSize.setAdapter(adapter);
+
+            // Lắng nghe sự kiện chọn size
+            spinnerSize.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                    selectedDialogSize[0] = defaultSizes[position];
+                }
+
+                @Override
+                public void onNothingSelected(android.widget.AdapterView<?> parent) {
+                }
+            });
+            // Gán size mặc định khi vừa mở dialog
+            selectedDialogSize[0] = defaultSizes[0];
+        } else {
+            // Nếu không phải giày (vd: Kính, Đồng hồ), ẩn phần chọn size
+            layoutSize.setVisibility(View.GONE);
+            selectedDialogSize[0] = "";
+        }
+
         tvName.setText(product.getName());
         tvPrice.setText(initialPriceFormatted);
-        Glide.with(context).load(product.getImageUrl()).into(imgProduct);
+
+        // Sửa lại logic load ảnh để dùng chìa khóa (giống hàm onBindViewHolder)
+        String fullImageUrl = "http://trannamkhanh-001-site1.jtempurl.com/images/" + product.getImageUrl();
+        String userCam = "11300735";
+        String passCam = "60-dayfreetrial";
+        String credential = okhttp3.Credentials.basic(userCam, passCam);
+        com.bumptech.glide.load.model.GlideUrl glideUrlWithAuth = new com.bumptech.glide.load.model.GlideUrl(fullImageUrl,
+                new com.bumptech.glide.load.model.LazyHeaders.Builder()
+                        .addHeader("Authorization", credential)
+                        .build());
+
+        Glide.with(context).load(glideUrlWithAuth).into(imgProduct);
 
         final int[] quantity = {1};
         NumberFormat formatter = new DecimalFormat("#,###");
 
         Runnable updateUI = () -> {
             tvQuantity.setText(String.valueOf(quantity[0]));
-            // [ĐÃ SỬA Ở ĐÂY - BƯỚC 3 QUAN TRỌNG]: Phải nhân với giá ĐÃ GIẢM (getFinalPrice) chứ không phải giá gốc
             double totalPrice = product.getFinalPrice() * quantity[0];
             tvPrice.setText(formatter.format(totalPrice) + " ₫");
         };
@@ -217,6 +269,9 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             updateUI.run();
         });
 
+        // ==========================================
+        // 3. SỰ KIỆN NÚT ADD TO CART
+        // ==========================================
         btnAddCartDialog.setOnClickListener(v -> {
             android.content.SharedPreferences prefs = context.getSharedPreferences("UserPrefs", android.content.Context.MODE_PRIVATE);
             boolean isLoggedIn = prefs.getBoolean("IS_LOGGED_IN", false);
@@ -228,14 +283,16 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             } else {
                 int userId = prefs.getInt("USER_ID", -1);
 
-                // 1. Lưu vào SQLite trên máy
-                CartManager.getInstance(context).add(new CartItem(product, quantity[0], ""));
+                // Lấy size cuối cùng được chọn
+                String finalSize = selectedDialogSize[0];
+
+                // 1. Lưu vào SQLite trên máy (TRUYỀN SIZE VÀO ĐÂY)
+                CartManager.getInstance(context).add(new CartItem(product, quantity[0], finalSize));
                 Toast.makeText(context, "Đã thêm vào giỏ hàng!", Toast.LENGTH_SHORT).show();
 
-                // 2. GỌI API 1 LẦN DUY NHẤT (Bỏ vòng lặp for đi)
+                // 2. GỌI API (TRUYỀN SIZE VÀO ĐÂY THAY VÌ CHUỖI RỖNG "")
                 if (userId != -1) {
-                    // Truyền đủ 4 tham số: userId, productId, quantity[0], và chuỗi rỗng "" cho size
-                    apiService.addToCart(userId, product.getId(), quantity[0], "").enqueue(new retrofit2.Callback<Void>() {
+                    apiService.addToCart(userId, product.getId(), quantity[0], finalSize).enqueue(new retrofit2.Callback<Void>() {
                         @Override
                         public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
                         @Override
@@ -246,9 +303,34 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             }
         });
 
+        // ==========================================
+        // 4. SỰ KIỆN NÚT BUY NOW
+        // ==========================================
         btnBuyNow.setOnClickListener(v -> {
-            Toast.makeText(context, "Đang tiến hành thanh toán...", Toast.LENGTH_SHORT).show();
-            bottomSheetDialog.dismiss();
+            android.content.SharedPreferences prefs = context.getSharedPreferences("UserPrefs", android.content.Context.MODE_PRIVATE);
+            boolean isLoggedIn = prefs.getBoolean("IS_LOGGED_IN", false);
+
+            if (!isLoggedIn) {
+                Toast.makeText(context, "Vui lòng đăng nhập để mua hàng!", Toast.LENGTH_SHORT).show();
+                context.startActivity(new Intent(context, com.example.arfurnitureshop.activities.LoginActivity.class));
+                bottomSheetDialog.dismiss();
+            } else {
+                // Chuyển trực tiếp sang CheckoutActivity và truyền dữ liệu
+                Intent intent = new Intent(context, com.example.arfurnitureshop.activities.CheckoutActivity.class);
+                intent.putExtra("IS_BUY_NOW", true);
+                intent.putExtra("BUY_NOW_ID", product.getId());
+                intent.putExtra("BUY_NOW_NAME", product.getName());
+                intent.putExtra("BUY_NOW_PRICE", product.getPrice());
+                intent.putExtra("BUY_NOW_DISCOUNT", product.getDiscount());
+                intent.putExtra("BUY_NOW_IMAGE", product.getImageUrl());
+                intent.putExtra("BUY_NOW_QTY", quantity[0]);
+
+                // TRUYỀN SIZE SANG CHECKOUT
+                intent.putExtra("BUY_NOW_SIZE", selectedDialogSize[0]);
+
+                context.startActivity(intent);
+                bottomSheetDialog.dismiss();
+            }
         });
 
         bottomSheetDialog.show();

@@ -16,10 +16,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.example.arfurnitureshop.R;
 import com.example.arfurnitureshop.adapters.ProductAdapter;
+import com.example.arfurnitureshop.adapters.ProductReviewAdapter;
 import com.example.arfurnitureshop.api.ApiService;
 import com.example.arfurnitureshop.api.RetrofitClient;
 import com.example.arfurnitureshop.models.CartItem;
 import com.example.arfurnitureshop.models.Product;
+import com.example.arfurnitureshop.models.ReviewResponse;
 import com.example.arfurnitureshop.utils.CartManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -67,6 +69,11 @@ public class ProductDetailActivity extends AppCompatActivity {
         TextView btnMinusDetail = findViewById(R.id.btnMinusDetail);
         TextView btnPlusDetail = findViewById(R.id.btnPlusDetail);
         TextView tvQuantityDetail = findViewById(R.id.tvQuantityDetail);
+
+        androidx.recyclerview.widget.RecyclerView rvProductReviews = findViewById(R.id.rvProductReviews);
+        android.widget.TextView tvEmptyReviews = findViewById(R.id.tvEmptyReviews);
+        rvProductReviews.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+
 
         // Ánh xạ RecyclerView đề xuất
         rvRecommended = findViewById(R.id.rvRecommended);
@@ -163,6 +170,27 @@ public class ProductDetailActivity extends AppCompatActivity {
                 public void onNothingSelected(android.widget.AdapterView<?> parent) { }
             });
         }
+        // ... Code cũ lấy chi tiết sản phẩm của bạn ...
+
+        // GỌI API LẤY DANH SÁCH ĐÁNH GIÁ (Dán vào cuối hàm onCreate hoặc sau khi lấy xong Product)
+        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
+        apiService.getProductReviews(productId).enqueue(new retrofit2.Callback<java.util.List<ReviewResponse>>() {
+            @Override
+            public void onResponse(retrofit2.Call<java.util.List<ReviewResponse>> call, retrofit2.Response<java.util.List<ReviewResponse>> response) {
+                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
+                    ProductReviewAdapter reviewAdapter = new ProductReviewAdapter(response.body());
+                    rvProductReviews.setAdapter(reviewAdapter);
+                    rvProductReviews.setVisibility(android.view.View.VISIBLE);
+                    tvEmptyReviews.setVisibility(android.view.View.GONE);
+                } else {
+                    rvProductReviews.setVisibility(android.view.View.GONE);
+                    tvEmptyReviews.setVisibility(android.view.View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<java.util.List<ReviewResponse>> call, Throwable t) {}
+        });
 
         // 1. Đã đổi tên biến thành imageName để tránh bị trùng lặp
         String imageName = getIntent().getStringExtra("PRODUCT_IMAGE");
@@ -311,6 +339,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             Intent intent = new Intent(ProductDetailActivity.this, FaceArActivity.class);
             startActivity(intent);
         });
+
     }
 
     // Hàm gọi API nạp sản phẩm đề xuất
@@ -345,6 +374,8 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         });
     }
+
+
 
     @Override
     protected void onResume() {

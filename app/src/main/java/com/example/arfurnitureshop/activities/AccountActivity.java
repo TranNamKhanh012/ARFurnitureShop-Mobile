@@ -64,8 +64,12 @@ public class AccountActivity extends AppCompatActivity {
             startActivity(new android.content.Intent(AccountActivity.this, MyAddressesActivity.class));
         });
 
-        btnOrderHistory.setOnClickListener(v -> {
-            Toast.makeText(this, "Chuyển đến trang Lịch sử mua hàng", Toast.LENGTH_SHORT).show();
+        // Giả sử trong activity_account.xml, phần lịch sử mua hàng của bạn có ID là layoutOrderHistory hoặc btnOrderHistory
+        View layoutOrderHistory = findViewById(R.id.btnOrderHistory); // <--- Đổi thành đúng ID của bạn
+
+        layoutOrderHistory.setOnClickListener(v -> {
+            Intent intent = new Intent(AccountActivity.this, OrderHistoryActivity.class);
+            startActivity(intent);
         });
 
         // Nút Đăng xuất: Xóa bộ nhớ và tự động đẩy về Home

@@ -80,11 +80,11 @@ public interface ApiService {
     Call<com.example.arfurnitureshop.models.User> login(@retrofit2.http.Body com.example.arfurnitureshop.models.User user);
 
     @POST("api/Auth/register")
-    Call<Void> register(@retrofit2.http.Body com.example.arfurnitureshop.models.User user);
-
+    Call<com.google.gson.JsonObject> register(@retrofit2.http.Body com.example.arfurnitureshop.models.User user);
     // Thay vì gửi nguyên cục User, giờ ta chỉ gửi LoginRequest lên
     @POST("api/Auth/login")
     Call<com.example.arfurnitureshop.models.User> login(@retrofit2.http.Body com.example.arfurnitureshop.models.LoginRequest request);
+
 
     // Lấy thông tin user bằng ID
     @GET("api/Auth/profile/{id}")
@@ -136,5 +136,28 @@ public interface ApiService {
     @POST("api/Orders/create")
     Call<okhttp3.ResponseBody> createOrder(@Body com.example.arfurnitureshop.models.OrderRequestDto orderDto);
     // Lấy danh sách địa chỉ của User
+
+    // Lấy lịch sử mua hàng
+    // Lấy lịch sử mua hàng
+    @GET("api/Orders/user/{userId}")
+    Call<java.util.List<com.example.arfurnitureshop.models.Order>> getUserOrders(@Path("userId") int userId);
+
+    // Gọi chung API của Admin để lấy chi tiết đơn hàng
+    @GET("api/Orders/admin-get/{id}")
+    Call<com.example.arfurnitureshop.models.OrderDetailResponse> getOrderDetail(@Path("id") int orderId);
+    // Gọi API kiểm tra mặt hàng chờ đánh giá
+    @GET("api/Reviews/pending/{userId}")
+    Call<java.util.List<com.example.arfurnitureshop.models.Product>> getPendingReviews(@Path("userId") int userId);
+    // Khách hàng xác nhận đã nhận hàng
+    @PUT("api/Orders/user-confirm/{id}")
+    Call<okhttp3.ResponseBody> confirmOrderReceived(@Path("id") int orderId);
+
+    // Gửi đánh giá mới
+    @POST("api/Reviews/create")
+    Call<okhttp3.ResponseBody> createReview(@Body com.example.arfurnitureshop.models.ReviewRequest reviewRequest);
+
+    // Lấy danh sách đánh giá của 1 sản phẩm
+    @GET("api/Reviews/product/{productId}")
+    Call<java.util.List<com.example.arfurnitureshop.models.ReviewResponse>> getProductReviews(@Path("productId") int productId);
 
 }

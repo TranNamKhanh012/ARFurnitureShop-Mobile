@@ -67,6 +67,12 @@
         <activity
             android:name=".activities.PaymentWebViewActivity"
             android:exported="false" />
+        <activity android:name=".activities.OrderHistoryActivity" />
+        <activity android:name=".activities.OrderDetailActivity" />
+        <activity android:name=".activities.PendingReviewsActivity" />
+
+
     </application>
+
 
 </manifest>

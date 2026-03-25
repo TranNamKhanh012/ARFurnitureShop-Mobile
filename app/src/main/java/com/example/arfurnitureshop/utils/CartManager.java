@@ -36,10 +36,21 @@ public class CartManager {
     }
 
     // Hàm tính tổng tiền cho màn hình CartActivity
+    // Hàm tính tổng tiền cho màn hình CartActivity ĐÃ ÁP DỤNG GIẢM GIÁ
     public double getTotal() {
         double total = 0;
         for (CartItem item : getItems()) {
-            total += item.getProduct().getPrice() * item.getQuantity();
+            double originalPrice = item.getProduct().getPrice();
+            int discount = item.getProduct().getDiscount();
+            double finalPrice = originalPrice;
+
+            // Tính giá sau khi giảm
+            if (discount > 0) {
+                finalPrice = originalPrice - (originalPrice * discount / 100.0);
+            }
+
+            // Cộng vào tổng tiền
+            total += finalPrice * item.getQuantity();
         }
         return total;
     }

@@ -171,6 +171,11 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
                         Toast.makeText(context, "Lỗi đồng bộ xóa với Server!", Toast.LENGTH_SHORT).show();
                     }
                 });
+                if (onUpdate == null) {
+                    h.del.setVisibility(View.GONE);
+                } else {
+                    h.del.setVisibility(View.VISIBLE);
+                }
             }
         });
     }
