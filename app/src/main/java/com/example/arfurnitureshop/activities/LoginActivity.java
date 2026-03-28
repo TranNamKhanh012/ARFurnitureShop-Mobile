@@ -70,7 +70,7 @@ public class LoginActivity extends AppCompatActivity {
                         editor.apply();
 
                         Toast.makeText(LoginActivity.this, "Xin chào " + loggedInUser.getFullName(), Toast.LENGTH_SHORT).show();
-
+                        com.example.arfurnitureshop.utils.BadgeUtils.fetchAndCacheBadges(LoginActivity.this);
                         // Chuyển trang dựa trên Role
                         if ("Admin".equals(loggedInUser.getRole())) {
                             Toast.makeText(LoginActivity.this, "Tài khoản Admin vui lòng đăng nhập trên Web!", Toast.LENGTH_LONG).show();

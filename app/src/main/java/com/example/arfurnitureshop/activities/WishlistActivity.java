@@ -100,6 +100,8 @@ public class WishlistActivity extends AppCompatActivity {
             productAdapter.notifyDataSetChanged();
         }
         checkEmptyList();
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
+        com.example.arfurnitureshop.utils.BadgeUtils.loadCachedBadges(this, bottomNav);
     }
 
     private void checkEmptyList() {

@@ -98,6 +98,17 @@ public class AllCategoriesActivity extends AppCompatActivity {
         com.example.arfurnitureshop.utils.SearchHelper.setupSearch(this);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // ... (Các code cũ của bạn nếu có) ...
+
+        // TỰ ĐỘNG ĐỒNG BỘ CHẤM ĐỎ GIỎ HÀNG VÀ YÊU THÍCH
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
+        com.example.arfurnitureshop.utils.BadgeUtils.loadCachedBadges(this, bottomNav);
+    }
+
     private void fetchCategories() {
         RetrofitClient.getClient().create(ApiService.class).getCategories().enqueue(new Callback<List<Category>>() {
             @Override

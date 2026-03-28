@@ -115,6 +115,16 @@ public class CartActivity extends AppCompatActivity {
         // GỌI TRỢ LÝ TÌM KIẾM RA LÀM VIỆC
         com.example.arfurnitureshop.utils.SearchHelper.setupSearch(this);
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // ... (Các code cũ của bạn nếu có) ...
+
+        // TỰ ĐỘNG ĐỒNG BỘ CHẤM ĐỎ GIỎ HÀNG VÀ YÊU THÍCH
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
+        com.example.arfurnitureshop.utils.BadgeUtils.loadCachedBadges(this, bottomNav);
+    }
 
     // PHẢI CÓ HÀM NÀY ĐỂ HẾT LỖI "this::updateTotal"
     private void updateTotal() {

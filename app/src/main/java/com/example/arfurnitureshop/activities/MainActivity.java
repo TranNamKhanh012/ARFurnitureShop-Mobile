@@ -26,6 +26,7 @@ import com.example.arfurnitureshop.utils.CartManager;
 import com.example.arfurnitureshop.utils.MenuHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.badge.BadgeDrawable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -151,6 +152,8 @@ public class MainActivity extends AppCompatActivity {
         // --- 8. XỬ LÝ THANH TÌM KIẾM MÀN HÌNH NỔI ---
         // --- 8. GỌI TRỢ LÝ TÌM KIẾM RA LÀM VIỆC ---
         com.example.arfurnitureshop.utils.SearchHelper.setupSearch(this);
+        com.example.arfurnitureshop.utils.BadgeUtils.fetchAndCacheBadges(this);
+
     }
 
     // ================= HÀM LẤY DỮ LIỆU TỪ BACKEND =================
@@ -203,6 +206,8 @@ public class MainActivity extends AppCompatActivity {
 
         // GỌI HÀM KIỂM TRA CHUÔNG THÔNG BÁO ĐÁNH GIÁ Ở ĐÂY
         checkPendingReviews();
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
+        com.example.arfurnitureshop.utils.BadgeUtils.loadCachedBadges(this, bottomNav);
     }
 
     private void checkPendingReviews() {
@@ -231,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(retrofit2.Call<java.util.List<com.example.arfurnitureshop.models.Product>> call, Throwable t) {}
         });
     }
+
 
     private void syncDataFromServer() {
         android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);

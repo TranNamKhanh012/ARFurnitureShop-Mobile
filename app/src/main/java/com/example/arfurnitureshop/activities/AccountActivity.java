@@ -142,6 +142,8 @@ public class AccountActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         checkLoginState();
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
+        com.example.arfurnitureshop.utils.BadgeUtils.loadCachedBadges(this, bottomNav);
     }
 
     // ==========================================

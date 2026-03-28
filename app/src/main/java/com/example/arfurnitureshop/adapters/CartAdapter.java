@@ -141,12 +141,13 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
         });
 
         // ==========================================
-        // NÚT XÓA SẢN PHẨM KHỎI GIỎ HÀNG
-        // ==========================================
+// NÚT XÓA SẢN PHẨM KHỎI GIỎ HÀNG
+// ==========================================
         h.del.setOnClickListener(v -> {
             int currentPos = h.getAdapterPosition();
             if (currentPos == RecyclerView.NO_POSITION) return;
 
+            // Trong Adapter, bạn đã có sẵn biến 'context' rồi, cứ dùng nó thôi!
             android.content.SharedPreferences prefs = context.getSharedPreferences("UserPrefs", android.content.Context.MODE_PRIVATE);
             int userId = prefs.getInt("USER_ID", -1);
             int productId = i.getProduct().getId();
@@ -156,25 +157,32 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
             list.remove(currentPos);
             notifyItemRemoved(currentPos);
-            onUpdate.run();
 
-            // GỌI API XÓA KHỎI DATABASE SQL SERVER (Đã thêm biến Size)
+            if (onUpdate != null) {
+                onUpdate.run();
+            }
+
+            // GỌI API XÓA KHỎI DATABASE SQL SERVER
             if (userId != -1) {
                 String sizeToSend = i.getSelectedSize() != null ? i.getSelectedSize() : "";
 
                 apiService.removeFromCart(userId, productId, sizeToSend).enqueue(new retrofit2.Callback<Void>() {
                     @Override
-                    public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
+                    public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {
+                        // ĐÃ SỬA: Chờ Server xóa xong thì mới gọi hàm đếm lại, và dùng 'context' thay cho 'this'
+                        com.example.arfurnitureshop.utils.BadgeUtils.fetchAndCacheBadges(context);
+                    }
 
                     @Override
                     public void onFailure(retrofit2.Call<Void> call, Throwable t) {
-                        Toast.makeText(context, "Lỗi đồng bộ xóa với Server!", Toast.LENGTH_SHORT).show();
+                        android.widget.Toast.makeText(context, "Lỗi đồng bộ xóa với Server!", android.widget.Toast.LENGTH_SHORT).show();
                     }
                 });
+
                 if (onUpdate == null) {
-                    h.del.setVisibility(View.GONE);
+                    h.del.setVisibility(android.view.View.GONE);
                 } else {
-                    h.del.setVisibility(View.VISIBLE);
+                    h.del.setVisibility(android.view.View.VISIBLE);
                 }
             }
         });

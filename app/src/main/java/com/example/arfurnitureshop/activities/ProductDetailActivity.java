@@ -255,6 +255,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 // 1. Lưu vào SQLite trên máy (như cũ)
                 CartManager.getInstance(ProductDetailActivity.this).add(new CartItem(currentProduct, selectedQuantity, selectedSize));
                 Toast.makeText(ProductDetailActivity.this, "Đã thêm " + selectedQuantity + " " + currentProduct.getName() + " vào giỏ!", Toast.LENGTH_SHORT).show();
+                com.example.arfurnitureshop.utils.BadgeUtils.fetchAndCacheBadges(this);
 
                 // 2. GỌI API 1 LẦN DUY NHẤT (Gửi kèm số lượng và Size)
                 String finalSize = selectedSize != null ? selectedSize : ""; // Tránh gửi null
