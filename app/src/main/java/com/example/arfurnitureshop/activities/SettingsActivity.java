@@ -38,7 +38,13 @@ public class SettingsActivity extends AppCompatActivity {
         LinearLayout btnChangePassword = findViewById(R.id.btnChangePassword);
         LinearLayout btnDeleteAccount = findViewById(R.id.btnDeleteAccount);
 
-        if (ivBack != null) ivBack.setOnClickListener(v -> finish());
+        // Đặt tiêu đề
+        android.widget.TextView tvTitle = findViewById(R.id.tvHeaderTitle);
+        tvTitle.setText("Cài đặt hệ thống");
+
+        // Bắt sự kiện nút Back dùng chung
+        android.widget.ImageView btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
 
         // --- 2. Xử lý Dark Mode ---
         sharedPreferences = getSharedPreferences("AppSettings", Context.MODE_PRIVATE);

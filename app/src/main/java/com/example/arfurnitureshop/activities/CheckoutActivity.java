@@ -52,8 +52,9 @@ public class CheckoutActivity extends AppCompatActivity {
 
     // Biến lưu địa chỉ đang được chọn để đẩy lên Server
     private UserAddress selectedAddress = null;
+    private boolean isBuyNow;
 
-    // TRÌNH LẮNG NGHE: Đợi kết quả chọn địa chỉ trả về từ trang MyAddressesActivity
+    // TRÌNH LẮNG NGHE 1: Đợi kết quả chọn địa chỉ trả về từ trang MyAddressesActivity
     private final ActivityResultLauncher<Intent> addressPickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -62,6 +63,22 @@ public class CheckoutActivity extends AppCompatActivity {
                     if (chosenAddress != null) {
                         updateAddressUI(chosenAddress); // Cập nhật lại giao diện ngay lập tức
                     }
+                }
+            }
+    );
+
+    // ==========================================
+    // [MỚI] TRÌNH LẮNG NGHE 2: Đợi kết quả từ cổng thanh toán VNPAY
+    // ==========================================
+    private final ActivityResultLauncher<Intent> vnpayLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    // Nếu VNPAY trả về OK -> Bắt đầu đẩy đơn hàng lên Database (Đã trả tiền)
+                    submitOrderToServer("VNPAY");
+                } else {
+                    // Khách bấm nút Hủy hoặc tắt ngang trang web
+                    Toast.makeText(this, "Bạn đã hủy thanh toán hoặc giao dịch bị lỗi.", Toast.LENGTH_SHORT).show();
                 }
             }
     );
@@ -93,7 +110,8 @@ public class CheckoutActivity extends AppCompatActivity {
         // ==========================================
         // 2. NẠP DỮ LIỆU ĐƠN HÀNG (SẢN PHẨM & TỰ TÍNH LẠI TIỀN)
         // ==========================================
-        boolean isBuyNow = getIntent().getBooleanExtra("IS_BUY_NOW", false);
+        // Đã sửa lỗi bóng mờ biến (shadowing) bằng cách bỏ chữ 'boolean'
+        isBuyNow = getIntent().getBooleanExtra("IS_BUY_NOW", false);
 
         if (isBuyNow) {
             // NẾU LÀ MUA NGAY: Tạo một giỏ hàng ảo chỉ chứa đúng 1 sản phẩm
@@ -103,8 +121,6 @@ public class CheckoutActivity extends AppCompatActivity {
             p.setName(getIntent().getStringExtra("BUY_NOW_NAME"));
             p.setPrice(getIntent().getDoubleExtra("BUY_NOW_PRICE", 0));
             p.setImageUrl(getIntent().getStringExtra("BUY_NOW_IMAGE"));
-
-            // [QUAN TRỌNG] Nhận % giảm giá
             p.setDiscount(getIntent().getIntExtra("BUY_NOW_DISCOUNT", 0));
 
             int qty = getIntent().getIntExtra("BUY_NOW_QTY", 1);
@@ -117,19 +133,15 @@ public class CheckoutActivity extends AppCompatActivity {
             cartItems = CartManager.getInstance(this).getItems();
         }
 
-        // [TUYỆT CHIÊU]: TỰ ĐỘNG QUÉT LẠI GIỎ HÀNG VÀ TÍNH TỔNG TIỀN ĐÃ GIẢM
         totalAmount = 0;
         for (CartItem item : cartItems) {
-            double finalUnitPrice = item.getProduct().getPrice(); // Lấy giá gốc
-            // Nếu có giảm giá thì trừ đi
+            double finalUnitPrice = item.getProduct().getPrice();
             if (item.getProduct().getDiscount() > 0) {
                 finalUnitPrice = finalUnitPrice - (finalUnitPrice * item.getProduct().getDiscount() / 100.0);
             }
-            // Cộng dồn vào tổng tiền
             totalAmount += (finalUnitPrice * item.getQuantity());
         }
 
-        // In tổng tiền chuẩn xác 100% ra màn hình Checkout
         DecimalFormat df = new DecimalFormat("#,###");
         tvTotal.setText("₫ " + df.format(totalAmount) + " VND");
 
@@ -140,100 +152,127 @@ public class CheckoutActivity extends AppCompatActivity {
         // ==========================================
         // 3. TỰ ĐỘNG LẤY ĐỊA CHỈ & XỬ LÝ NÚT THAY ĐỔI
         // ==========================================
-        // Gọi API tải địa chỉ khi vừa vào trang
         loadUserAddresses();
 
-        // Nút "THAY ĐỔI >" mở trang danh sách địa chỉ
         btnChangeAddress.setOnClickListener(v -> {
             Intent intent = new Intent(CheckoutActivity.this, MyAddressesActivity.class);
-            intent.putExtra("IS_SELECTION_MODE", true); // Bật cờ "Đang chọn địa chỉ"
+            intent.putExtra("IS_SELECTION_MODE", true);
             addressPickerLauncher.launch(intent);
         });
 
-
         // ==========================================
-        // 4. XỬ LÝ NÚT ĐẶT HÀNG (PLACE ORDER)
+        // 4. XỬ LÝ NÚT ĐẶT HÀNG (PLACE ORDER) - LUỒNG VNPAY
         // ==========================================
         btnPlaceOrder.setOnClickListener(v -> {
 
-            // 1. Kiểm tra xem đã có địa chỉ giao hàng chưa
             if (selectedAddress == null) {
                 Toast.makeText(this, "Vui lòng thêm hoặc chọn địa chỉ giao hàng!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // 2. Xác định phương thức thanh toán
             int checkedId = rgPayment.getCheckedRadioButtonId();
-            String paymentMethod = (checkedId == R.id.rbMock) ? "MOCK" : "COD";
+            // Đã đổi chữ MOCK thành VNPAY cho chuẩn
+            String paymentMethod = (checkedId == R.id.rbMock) ? "VNPAY" : "COD";
 
-            // 3. Hiện Progess chờ
-            android.app.ProgressDialog pd = new android.app.ProgressDialog(this);
-            pd.setMessage("Đang xử lý đơn hàng...");
-            pd.show();
+            if (paymentMethod.equals("VNPAY")) {
+                // NẾU CHỌN THẺ -> GỌI API LẤY LINK VNPAY RỒI MỞ TRANG WEB
+                android.app.ProgressDialog pd = new android.app.ProgressDialog(this);
+                pd.setMessage("Đang kết nối cổng thanh toán VNPAY...");
+                pd.show();
 
-            // 4. ĐÓNG GÓI DỮ LIỆU (Đẩy Database)
-            SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-            int userId = prefs.getInt("USER_ID", -1);
+                apiService.getVnpayUrl(totalAmount).enqueue(new Callback<okhttp3.ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<okhttp3.ResponseBody> call, Response<okhttp3.ResponseBody> response) {
+                        pd.dismiss();
+                        try {
+                            if (response.isSuccessful() && response.body() != null) {
+                                String url = response.body().string(); // Lấy link VNPAY
+                                Intent intent = new Intent(CheckoutActivity.this, PaymentWebViewActivity.class);
+                                intent.putExtra("VNPAY_URL", url);
+                                vnpayLauncher.launch(intent); // Mở Webview chờ khách trả tiền
+                            } else {
+                                Toast.makeText(CheckoutActivity.this, "Lỗi tạo link thanh toán", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
 
-            OrderRequestDto orderDto = new OrderRequestDto();
-            orderDto.userId = userId;
-            orderDto.totalAmount = totalAmount;
-            orderDto.paymentMethod = paymentMethod;
+                    @Override
+                    public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {
+                        pd.dismiss();
+                        Toast.makeText(CheckoutActivity.this, "Lỗi kết nối VNPAY", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                // NẾU LÀ COD -> ĐẨY ĐƠN HÀNG LÊN SERVER LUÔN (Không cần mở web)
+                submitOrderToServer("COD");
+            }
+        });
+    }
 
-            // Lấy thông tin từ địa chỉ được chọn
-            orderDto.shippingAddress = selectedAddress.getFullAddress();
-            orderDto.phoneNumber = selectedAddress.getPhoneNumber();
-            orderDto.receiverName = selectedAddress.getReceiverName();
+    // ==========================================
+    // [MỚI] HÀM TẠO ĐƠN HÀNG VÀ ĐẨY LÊN SQL SERVER (Dùng chung cho cả COD và VNPAY)
+    // ==========================================
+    private void submitOrderToServer(String paymentMethod) {
+        android.app.ProgressDialog pd = new android.app.ProgressDialog(this);
+        pd.setMessage("Đang xử lý đơn hàng...");
+        pd.show();
 
-            orderDto.items = new ArrayList<>();
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        int userId = prefs.getInt("USER_ID", -1);
 
-            // Chuyển CartItem -> OrderItemDto
-            for (CartItem cartItem : cartItems) {
-                // TÍNH GIÁ ĐÃ GIẢM ĐỂ GỬI LÊN HÓA ĐƠN SQL
-                double finalUnitPrice = cartItem.getProduct().getPrice();
-                if (cartItem.getProduct().getDiscount() > 0) {
-                    finalUnitPrice = finalUnitPrice - (finalUnitPrice * cartItem.getProduct().getDiscount() / 100.0);
+        OrderRequestDto orderDto = new OrderRequestDto();
+        orderDto.userId = userId;
+        orderDto.totalAmount = totalAmount;
+        orderDto.paymentMethod = paymentMethod;
+        orderDto.shippingAddress = selectedAddress.getFullAddress();
+        orderDto.phoneNumber = selectedAddress.getPhoneNumber();
+        orderDto.receiverName = selectedAddress.getReceiverName();
+
+        orderDto.items = new ArrayList<>();
+
+        for (CartItem cartItem : cartItems) {
+            double finalUnitPrice = cartItem.getProduct().getPrice();
+            if (cartItem.getProduct().getDiscount() > 0) {
+                finalUnitPrice = finalUnitPrice - (finalUnitPrice * cartItem.getProduct().getDiscount() / 100.0);
+            }
+            OrderRequestDto.OrderItemDto itemDto = new OrderRequestDto.OrderItemDto(
+                    cartItem.getProduct().getId(),
+                    cartItem.getQuantity(),
+                    finalUnitPrice
+            );
+            itemDto.selectedSize = cartItem.getSelectedSize() != null ? cartItem.getSelectedSize() : "";
+            orderDto.items.add(itemDto);
+        }
+
+        apiService.createOrder(orderDto).enqueue(new Callback<okhttp3.ResponseBody>() {
+            @Override
+            public void onResponse(Call<okhttp3.ResponseBody> call, Response<okhttp3.ResponseBody> response) {
+                pd.dismiss();
+                if (response.isSuccessful()) {
+                    Toast.makeText(CheckoutActivity.this, "🎉 Đặt hàng thành công!", Toast.LENGTH_LONG).show();
+
+                    if (!isBuyNow) {
+                        CartManager.getInstance(CheckoutActivity.this).clear();
+                    }
+                    // Cập nhật lại số lượng giỏ hàng ở thanh Bottom Nav
+                    com.example.arfurnitureshop.utils.BadgeUtils.fetchAndCacheBadges(CheckoutActivity.this);
+
+                    Intent intent = new Intent(CheckoutActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(CheckoutActivity.this, "Lỗi API lưu đơn hàng!", Toast.LENGTH_SHORT).show();
                 }
-
-                OrderRequestDto.OrderItemDto itemDto = new OrderRequestDto.OrderItemDto(
-                        cartItem.getProduct().getId(),
-                        cartItem.getQuantity(),
-                        finalUnitPrice // TRUYỀN GIÁ ĐÃ GIẢM VÀO ĐÂY
-                );
-                itemDto.selectedSize = cartItem.getSelectedSize() != null ? cartItem.getSelectedSize() : "";
-
-                orderDto.items.add(itemDto);
             }
 
-            // 5. GỌI API ĐẨY ĐƠN HÀNG LÊN DATABASE C#
-            apiService.createOrder(orderDto).enqueue(new Callback<okhttp3.ResponseBody>() {
-                @Override
-                public void onResponse(Call<okhttp3.ResponseBody> call, Response<okhttp3.ResponseBody> response) {
-                    pd.dismiss();
-                    if (response.isSuccessful()) {
-                        Toast.makeText(CheckoutActivity.this, "🎉 Đặt hàng thành công!", Toast.LENGTH_LONG).show();
-
-                        // [MỚI] CHỈ XÓA GIỎ HÀNG NẾU KHÁCH MUA TỪ GIỎ HÀNG (Không xóa nếu mua ngay)
-                        if (!isBuyNow) {
-                            CartManager.getInstance(CheckoutActivity.this).clear();
-                        }
-
-                        // Về Trang chủ
-                        Intent intent = new Intent(CheckoutActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
-                    } else {
-                        Toast.makeText(CheckoutActivity.this, "Lỗi API lưu đơn hàng!", Toast.LENGTH_SHORT).show();
-                    }
-                }
-
-                @Override
-                public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {
-                    pd.dismiss();
-                    Toast.makeText(CheckoutActivity.this, "Lỗi kết nối Local: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                }
-            });
+            @Override
+            public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {
+                pd.dismiss();
+                Toast.makeText(CheckoutActivity.this, "Lỗi kết nối Local: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
@@ -250,7 +289,6 @@ public class CheckoutActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     List<UserAddress> addresses = response.body();
 
-                    // Ưu tiên tìm địa chỉ có isDefault = true
                     UserAddress defaultAddr = addresses.get(0);
                     for (UserAddress addr : addresses) {
                         if (addr.isDefault()) {
@@ -260,7 +298,6 @@ public class CheckoutActivity extends AppCompatActivity {
                     }
                     updateAddressUI(defaultAddr);
                 } else {
-                    // Không có địa chỉ nào trong DB
                     layoutAddressInfo.setVisibility(View.GONE);
                     tvNoAddress.setVisibility(View.VISIBLE);
                 }

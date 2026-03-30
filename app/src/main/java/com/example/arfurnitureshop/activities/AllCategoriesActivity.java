@@ -96,6 +96,7 @@ public class AllCategoriesActivity extends AppCompatActivity {
         });
         // GỌI TRỢ LÝ TÌM KIẾM RA LÀM VIỆC
         com.example.arfurnitureshop.utils.SearchHelper.setupSearch(this);
+        com.example.arfurnitureshop.utils.NotificationHelper.setupNotificationBell(this);
     }
 
     @Override
@@ -107,6 +108,7 @@ public class AllCategoriesActivity extends AppCompatActivity {
         // TỰ ĐỘNG ĐỒNG BỘ CHẤM ĐỎ GIỎ HÀNG VÀ YÊU THÍCH
         com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
         com.example.arfurnitureshop.utils.BadgeUtils.loadCachedBadges(this, bottomNav);
+        com.example.arfurnitureshop.utils.NotificationHelper.checkPendingReviews(this);
     }
 
     private void fetchCategories() {

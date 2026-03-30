@@ -302,6 +302,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 bottomSheetDialog.dismiss();
             }
         });
+        com.example.arfurnitureshop.utils.BadgeUtils.fetchAndCacheBadges(context);
 
         // ==========================================
         // 4. SỰ KIỆN NÚT BUY NOW

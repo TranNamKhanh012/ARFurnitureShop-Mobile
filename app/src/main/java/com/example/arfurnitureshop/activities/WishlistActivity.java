@@ -91,6 +91,7 @@ public class WishlistActivity extends AppCompatActivity {
         });
         // GỌI TRỢ LÝ TÌM KIẾM RA LÀM VIỆC
         com.example.arfurnitureshop.utils.SearchHelper.setupSearch(this);
+        com.example.arfurnitureshop.utils.NotificationHelper.setupNotificationBell(this);
     }
 
     @Override
@@ -102,6 +103,7 @@ public class WishlistActivity extends AppCompatActivity {
         checkEmptyList();
         com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
         com.example.arfurnitureshop.utils.BadgeUtils.loadCachedBadges(this, bottomNav);
+        com.example.arfurnitureshop.utils.NotificationHelper.checkPendingReviews(this);
     }
 
     private void checkEmptyList() {

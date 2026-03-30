@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.ImageView;
+import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
@@ -16,16 +17,31 @@ public class ContactUsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_us);
 
-        // 1. Ánh xạ 3 nút bấm và nút Back
-        ImageView ivBack = findViewById(R.id.ivBack);
+        // ==========================================
+        // 1. ÁNH XẠ VÀ CÀI ĐẶT HEADER DÙNG CHUNG
+        // ==========================================
+        // Bước 1: Tìm cái thẻ <include> trước
+        android.view.View headerView = findViewById(R.id.headerContactUs);
+
+        if (headerView != null) {
+            // Bước 2: Tìm Tiêu đề và Nút Back BÊN TRONG thẻ include đó
+            TextView tvTitle = headerView.findViewById(R.id.tvHeaderTitle);
+            if (tvTitle != null) {
+                tvTitle.setText("Liên hệ hỗ trợ");
+            }
+
+            ImageView btnBack = headerView.findViewById(R.id.btnBack);
+            if (btnBack != null) {
+                btnBack.setOnClickListener(v -> finish());
+            }
+        }
+
+        // ==========================================
+        // 2. ÁNH XẠ VÀ XỬ LÝ CÁC NÚT BẤM LIÊN HỆ
+        // ==========================================
         CardView cardHotline = findViewById(R.id.cardHotline);
         CardView cardZalo = findViewById(R.id.cardZalo);
         CardView cardTawkTo = findViewById(R.id.cardTawkTo);
-
-        // 2. Xử lý nút quay lại
-        if (ivBack != null) {
-            ivBack.setOnClickListener(v -> finish());
-        }
 
         // 3. Xử lý Gọi điện Hotline
         if (cardHotline != null) {

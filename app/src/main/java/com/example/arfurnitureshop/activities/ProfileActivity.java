@@ -39,7 +39,12 @@ public class ProfileActivity extends AppCompatActivity {
         // Lấy dữ liệu khi vừa mở màn hình
         loadUserData();
 
-        // Xử lý nút bấm
+        // ==========================================
+        // ÁNH XẠ VÀ CÀI ĐẶT HEADER DÙNG CHUNG
+        // ==========================================
+        android.widget.TextView tvTitle = findViewById(R.id.tvHeaderTitle);
+        tvTitle.setText("Hồ sơ của tôi");
+
         btnBack.setOnClickListener(v -> finish());
         btnSave.setOnClickListener(v -> saveUserData());
     }

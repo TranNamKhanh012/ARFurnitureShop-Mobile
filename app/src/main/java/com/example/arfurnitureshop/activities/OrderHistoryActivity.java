@@ -28,15 +28,17 @@ public class OrderHistoryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_history);
 
-        ImageView ivBack = findViewById(R.id.ivBackHistory);
+        ImageView btnBack = findViewById(R.id.btnBack);
         rvOrderHistory = findViewById(R.id.rvOrderHistory);
         tvNoOrders = findViewById(R.id.tvNoOrders);
 
-        ivBack.setOnClickListener(v -> finish());
+        btnBack.setOnClickListener(v -> finish());
         rvOrderHistory.setLayoutManager(new LinearLayoutManager(this));
 
         apiService = RetrofitClient.getClient().create(ApiService.class);
         loadOrderHistory();
+        TextView tvHeaderTitle = findViewById(R.id.tvHeaderTitle);
+        tvHeaderTitle.setText("Lịch sử mua hàng");
     }
 
     private void loadOrderHistory() {

@@ -20,15 +20,17 @@ public class PaymentWebViewActivity extends AppCompatActivity {
 
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new WebViewClient() {
+            // Sửa lại đoạn kiểm tra url trong PaymentWebViewActivity.java
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                // Kiểm tra nếu VNPAY trả về link kết quả (phải khớp với ReturnUrl ở C#)
+                // Kiểm tra nếu VNPAY trả về link kết quả
                 if (url.contains("PaymentCallback")) {
                     if (url.contains("vnp_ResponseCode=00")) {
                         Toast.makeText(PaymentWebViewActivity.this, "Thanh toán thành công!", Toast.LENGTH_LONG).show();
-                        // Code để xóa giỏ hàng hoặc về trang chủ ở đây
+                        setResult(RESULT_OK); // <--- THÊM DÒNG NÀY: Báo về là thành công
                     } else {
-                        Toast.makeText(PaymentWebViewActivity.this, "Giao dịch thất bại!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(PaymentWebViewActivity.this, "Giao dịch thất bại hoặc bị hủy!", Toast.LENGTH_LONG).show();
+                        setResult(RESULT_CANCELED); // <--- THÊM DÒNG NÀY: Báo về là thất bại
                     }
                     finish(); // Đóng trang thanh toán
                     return true;
