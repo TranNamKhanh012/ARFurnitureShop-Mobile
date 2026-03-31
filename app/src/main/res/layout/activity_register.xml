@@ -1,63 +1,124 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F8F9FA"
+    android:gravity="center"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center">
+    android:padding="24dp">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ĐĂNG KÝ"
-        android:textSize="28sp"
-        android:textStyle="bold"
+        android:layout_marginBottom="30dp"
         android:gravity="center"
-        android:layout_marginBottom="30dp"/>
+        android:text="Sign Up"
+        android:textColor="#1A1C29"
+        android:textSize="32sp"
+        android:textStyle="bold" />
 
-    <EditText
-        android:id="@+id/etRegUsername"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="Tên đăng nhập"
-        android:background="@android:drawable/editbox_background"
-        android:padding="12dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:boxCornerRadiusBottomEnd="28dp"
+        app:boxCornerRadiusBottomStart="28dp"
+        app:boxCornerRadiusTopEnd="28dp"
+        app:boxCornerRadiusTopStart="28dp"
+        app:boxStrokeColor="#CCCCCC"
+        app:boxStrokeWidth="1dp">
 
-    <EditText
-        android:id="@+id/etRegPassword"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="Mật khẩu"
-        android:inputType="textPassword"
-        android:background="@android:drawable/editbox_background"
-        android:padding="12dp"
-        android:layout_marginBottom="16dp"/>
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etRegUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Username"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="14dp"
+            android:textColor="#333333" />
+    </com.google.android.material.textfield.TextInputLayout>
 
-    <EditText
-        android:id="@+id/etRegFullName"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="Họ và Tên"
-        android:background="@android:drawable/editbox_background"
-        android:padding="12dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:boxCornerRadiusBottomEnd="28dp"
+        app:boxCornerRadiusBottomStart="28dp"
+        app:boxCornerRadiusTopEnd="28dp"
+        app:boxCornerRadiusTopStart="28dp"
+        app:boxStrokeColor="#CCCCCC"
+        app:boxStrokeWidth="1dp">
 
-    <EditText
-        android:id="@+id/etRegEmail"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etRegFullName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Full Name"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="14dp"
+            android:textColor="#333333" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:hint="Địa chỉ Email"
-        android:inputType="textEmailAddress"
-        android:background="@android:drawable/editbox_background"
-        android:padding="12dp"
-        android:layout_marginBottom="16dp"/>
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:boxCornerRadiusBottomEnd="28dp"
+        app:boxCornerRadiusBottomStart="28dp"
+        app:boxCornerRadiusTopEnd="28dp"
+        app:boxCornerRadiusTopStart="28dp"
+        app:boxStrokeColor="#CCCCCC"
+        app:boxStrokeWidth="1dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etRegEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Email Address"
+            android:inputType="textEmailAddress"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="14dp"
+            android:textColor="#333333" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        app:boxCornerRadiusBottomEnd="28dp"
+        app:boxCornerRadiusBottomStart="28dp"
+        app:boxCornerRadiusTopEnd="28dp"
+        app:boxCornerRadiusTopStart="28dp"
+        app:boxStrokeColor="#CCCCCC"
+        app:boxStrokeWidth="1dp"
+        app:passwordToggleEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etRegPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="14dp"
+            android:textColor="#333333" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/btnRegister"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:text="Tạo Tài Khoản"
-        android:textSize="18sp"
-        android:backgroundTint="#4CAF50"/>
+        android:layout_height="56dp"
+        android:backgroundTint="#FFB74D"
+        android:text="SIGN UP"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:cornerRadius="28dp"
+        app:elevation="4dp"/>
+
 </LinearLayout>

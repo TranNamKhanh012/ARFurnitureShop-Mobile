@@ -89,9 +89,8 @@ public class CheckoutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_checkout);
 
         // ==========================================
-        // 1. ÁNH XẠ TOÀN BỘ VIEW
+        // 1. ÁNH XẠ TOÀN BỘ VIEW (Đã xóa ivBack cũ)
         // ==========================================
-        ImageView ivBack = findViewById(R.id.ivBackCheckout);
         tvReceiverNamePhone = findViewById(R.id.tvReceiverNamePhone);
         tvFullAddress = findViewById(R.id.tvFullAddress);
         tvNoAddress = findViewById(R.id.tvNoAddress);
@@ -105,12 +104,40 @@ public class CheckoutActivity extends AppCompatActivity {
 
         // Khởi tạo API
         apiService = RetrofitClient.getClient().create(ApiService.class);
-        ivBack.setOnClickListener(v -> finish());
+
+        // ==========================================
+        // ÁNH XẠ VÀ CÀI ĐẶT HEADER DÙNG CHUNG
+        // ==========================================
+        View headerView = findViewById(R.id.headerCheckout);
+        if (headerView != null) {
+            // 1. Đặt tiêu đề
+            TextView tvTitle = headerView.findViewById(R.id.tvHeaderTitle);
+            if (tvTitle != null) {
+                tvTitle.setText("Thanh toán");
+            }
+
+            // 2. Xử lý nút Back
+            ImageView btnBack = headerView.findViewById(R.id.btnBack);
+            if (btnBack != null) {
+                btnBack.setOnClickListener(v -> finish());
+            }
+
+            // 3. Xử lý nút Home
+            ImageView btnHome = headerView.findViewById(R.id.btnHome);
+            if (btnHome != null) {
+                btnHome.setOnClickListener(v -> {
+                    Intent intent = new Intent(CheckoutActivity.this, MainActivity.class);
+                    // Dọn dẹp RAM, quay thẳng về màn hình chính
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+        }
 
         // ==========================================
         // 2. NẠP DỮ LIỆU ĐƠN HÀNG (SẢN PHẨM & TỰ TÍNH LẠI TIỀN)
         // ==========================================
-        // Đã sửa lỗi bóng mờ biến (shadowing) bằng cách bỏ chữ 'boolean'
         isBuyNow = getIntent().getBooleanExtra("IS_BUY_NOW", false);
 
         if (isBuyNow) {
@@ -171,7 +198,6 @@ public class CheckoutActivity extends AppCompatActivity {
             }
 
             int checkedId = rgPayment.getCheckedRadioButtonId();
-            // Đã đổi chữ MOCK thành VNPAY cho chuẩn
             String paymentMethod = (checkedId == R.id.rbMock) ? "VNPAY" : "COD";
 
             if (paymentMethod.equals("VNPAY")) {

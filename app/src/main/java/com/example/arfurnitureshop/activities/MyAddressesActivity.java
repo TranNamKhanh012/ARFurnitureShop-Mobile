@@ -1,11 +1,16 @@
 package com.example.arfurnitureshop.activities;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -27,7 +32,6 @@ public class MyAddressesActivity extends AppCompatActivity {
     private RecyclerView rvAddresses;
     private LinearLayout layoutEmpty;
     private Button btnAddAddress;
-    private ImageView ivBack;
 
     private ApiService apiService;
     private int currentUserId;
@@ -37,23 +41,52 @@ public class MyAddressesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_addresses);
 
+        // Ánh xạ các View chính
         rvAddresses = findViewById(R.id.rvAddresses);
         layoutEmpty = findViewById(R.id.layoutEmpty);
         btnAddAddress = findViewById(R.id.btnAddAddress);
-        ivBack = findViewById(R.id.ivBack);
 
         rvAddresses.setLayoutManager(new LinearLayoutManager(this));
 
+        // ==========================================
+        // ÁNH XẠ VÀ CÀI ĐẶT HEADER DÙNG CHUNG
+        // ==========================================
+        View headerView = findViewById(R.id.headerMyAddresses);
+        if (headerView != null) {
+
+            // 1. Đặt tiêu đề
+            TextView tvTitle = headerView.findViewById(R.id.tvHeaderTitle);
+            if (tvTitle != null) {
+                tvTitle.setText("Địa chỉ của tôi");
+            }
+
+            // 2. Xử lý nút Back
+            ImageView btnBack = headerView.findViewById(R.id.btnBack);
+            if (btnBack != null) {
+                btnBack.setOnClickListener(v -> finish());
+            }
+
+            // 3. Xử lý nút Home
+            ImageView btnHome = headerView.findViewById(R.id.btnHome);
+            if (btnHome != null) {
+                btnHome.setOnClickListener(v -> {
+                    Intent intent = new Intent(MyAddressesActivity.this, MainActivity.class);
+                    // Xóa các trang trung gian để về Home cho mượt
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+        }
+
         // Khởi tạo API và lấy UserID
         apiService = RetrofitClient.getClient().create(ApiService.class);
-        android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
         currentUserId = prefs.getInt("USER_ID", -1);
 
-        ivBack.setOnClickListener(v -> finish());
-
         btnAddAddress.setOnClickListener(v -> {
-            // ĐÃ SỬA: Chuyển sang trang Thêm Địa Chỉ Mới
-            startActivity(new android.content.Intent(MyAddressesActivity.this, AddAddressActivity.class));
+            // Chuyển sang trang Thêm Địa Chỉ Mới
+            startActivity(new Intent(MyAddressesActivity.this, AddAddressActivity.class));
         });
     }
 
@@ -62,10 +95,6 @@ public class MyAddressesActivity extends AppCompatActivity {
         super.onResume();
         loadRealAddresses(); // Tự động load lại danh sách mỗi khi mở trang
     }
-
-    // Thêm thư viện này ở trên cùng:
-// import androidx.appcompat.app.AlertDialog;
-// import android.content.Intent;
 
     private void loadRealAddresses() {
         if (currentUserId == -1) return;
@@ -83,12 +112,12 @@ public class MyAddressesActivity extends AppCompatActivity {
                         layoutEmpty.setVisibility(View.GONE);
                         rvAddresses.setVisibility(View.VISIBLE);
 
-                        // ĐÃ SỬA: Xử lý sự kiện Edit và Delete từ Adapter truyền về
+                        // Xử lý sự kiện Edit và Delete từ Adapter truyền về
                         AddressAdapter adapter = new AddressAdapter(addresses, new AddressAdapter.OnAddressClickListener() {
                             @Override
                             public void onEdit(UserAddress address) {
                                 // Gói toàn bộ dữ liệu của địa chỉ này đẩy sang trang Sửa
-                                android.content.Intent intent = new android.content.Intent(MyAddressesActivity.this, AddAddressActivity.class);
+                                Intent intent = new Intent(MyAddressesActivity.this, AddAddressActivity.class);
                                 intent.putExtra("IS_EDIT_MODE", true);
                                 intent.putExtra("ADDRESS_ID", address.getId());
                                 intent.putExtra("RECEIVER_NAME", address.getReceiverName());
@@ -101,7 +130,7 @@ public class MyAddressesActivity extends AppCompatActivity {
                             @Override
                             public void onDelete(UserAddress address) {
                                 // Mở hộp thoại xác nhận trước khi xóa
-                                new androidx.appcompat.app.AlertDialog.Builder(MyAddressesActivity.this)
+                                new AlertDialog.Builder(MyAddressesActivity.this)
                                         .setTitle("Xóa địa chỉ")
                                         .setMessage("Bạn có chắc chắn muốn xóa địa chỉ này?")
                                         .setPositiveButton("Xóa", (dialog, which) -> {

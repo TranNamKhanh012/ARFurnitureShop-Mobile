@@ -34,6 +34,19 @@ public class ContactUsActivity extends AppCompatActivity {
             if (btnBack != null) {
                 btnBack.setOnClickListener(v -> finish());
             }
+            // =====================================
+            // THÊM SỰ KIỆN NÚT HOME VÀO ĐÂY
+            // =====================================
+            ImageView btnHome = headerView.findViewById(R.id.btnHome);
+            if (btnHome != null) {
+                btnHome.setOnClickListener(v -> {
+                    Intent intent = new Intent(this, MainActivity.class); // Về trang chủ
+                    // Xóa toàn bộ lịch sử các trang trước đó để tránh đầy RAM
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
         }
 
         // ==========================================

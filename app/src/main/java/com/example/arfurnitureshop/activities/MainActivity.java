@@ -147,6 +147,17 @@ public class MainActivity extends AppCompatActivity {
 
         // GỌI TRỢ LÝ THÔNG BÁO RA LÀM VIỆC
         com.example.arfurnitureshop.utils.NotificationHelper.setupNotificationBell(this);
+        // =========================================================
+        // THÊM SỰ KIỆN NÚT AI NỔI TRÊN MÀN HÌNH CHÍNH
+        // =========================================================
+        com.google.android.material.floatingactionbutton.FloatingActionButton fabChatAi = findViewById(R.id.fabChatAi);
+        if (fabChatAi != null) {
+            fabChatAi.setOnClickListener(v -> {
+                // Khi bấm vào sẽ mở trang Chat với AI
+                android.content.Intent intent = new android.content.Intent(MainActivity.this, ChatAiActivity.class);
+                startActivity(intent);
+            });
+        }
     }
 
     // ================= HÀM LẤY DỮ LIỆU TỪ BACKEND =================

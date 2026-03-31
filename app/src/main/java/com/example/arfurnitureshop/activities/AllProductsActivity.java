@@ -1,6 +1,8 @@
 package com.example.arfurnitureshop.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -36,7 +38,6 @@ public class AllProductsActivity extends AppCompatActivity {
     private ApiService apiService;
     private Spinner spinnerSortBy;
     private LinearLayout llFilter;
-    private TextView tvPageTitle;
 
     private Double currentMinPrice = null;
     private Double currentMaxPrice = null;
@@ -57,20 +58,47 @@ public class AllProductsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_products);
 
-        // ĐÃ SỬA: Khởi tạo API ngay trên cùng để tránh lỗi Null
+        // Khởi tạo API
         apiService = RetrofitClient.getClient().create(ApiService.class);
 
         rvAllProducts = findViewById(R.id.rvAllProducts);
         spinnerSortBy = findViewById(R.id.spinnerSortBy);
         llFilter = findViewById(R.id.llFilter);
-        tvPageTitle = findViewById(R.id.tvPageTitle);
-        ImageView ivBack = findViewById(R.id.ivBack);
 
         rvAllProducts.setLayoutManager(new GridLayoutManager(this, 2));
 
         String pageTitle = getIntent().getStringExtra("PAGE_TITLE");
-        if (pageTitle != null) tvPageTitle.setText(pageTitle);
         showOnlyDiscount = getIntent().getBooleanExtra("SHOW_ONLY_DISCOUNT", false);
+
+        // ==========================================
+        // ÁNH XẠ VÀ CÀI ĐẶT HEADER DÙNG CHUNG
+        // ==========================================
+        View headerView = findViewById(R.id.headerAllProducts);
+        if (headerView != null) {
+
+            // 1. Gán tiêu đề động (Best Sellers hoặc All Products)
+            TextView tvTitle = headerView.findViewById(R.id.tvHeaderTitle);
+            if (tvTitle != null) {
+                tvTitle.setText(pageTitle != null ? pageTitle : "Danh sách sản phẩm");
+            }
+
+            // 2. Nút Back
+            ImageView btnBack = headerView.findViewById(R.id.btnBack);
+            if (btnBack != null) {
+                btnBack.setOnClickListener(v -> finish());
+            }
+
+            // 3. Nút Home
+            ImageView btnHome = headerView.findViewById(R.id.btnHome);
+            if (btnHome != null) {
+                btnHome.setOnClickListener(v -> {
+                    Intent intent = new Intent(AllProductsActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+        }
 
         ArrayAdapter<String> adapterSortBy = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortOptionsArray);
         adapterSortBy.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -87,15 +115,12 @@ public class AllProductsActivity extends AppCompatActivity {
         });
 
         llFilter.setOnClickListener(v -> showPriceFilterDialog());
-        ivBack.setOnClickListener(v -> finish());
 
-        // ĐÃ SỬA: Gọi API luôn khi vào trang
+        // Gọi API nạp dữ liệu
         fetchAllProducts();
     }
 
     private void fetchAllProducts() {
-        // ĐÃ SỬA: Chuyển "" thành null để Server trả về toàn bộ
-        // ĐÃ SỬA: Trả lại chuỗi rỗng "" thay vì null để Server C# không bị báo lỗi 400
         apiService.getFilteredSortedProducts(null, currentMinPrice, currentMaxPrice, currentSortBy)
                 .enqueue(new Callback<List<Product>>() {
                     @Override
@@ -118,7 +143,6 @@ public class AllProductsActivity extends AppCompatActivity {
                             productAdapter = new ProductAdapter(products);
                             rvAllProducts.setAdapter(productAdapter);
                         } else {
-                            // ĐÃ SỬA: In ra mã lỗi để bắt bệnh chính xác nếu Server từ chối
                             Toast.makeText(AllProductsActivity.this, "Lỗi Server: " + response.code(), Toast.LENGTH_LONG).show();
                         }
                     }

@@ -39,18 +39,13 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="16dp">
-                <ImageView android:id="@+id/icNote" android:layout_width="20dp" android:layout_height="20dp" android:src="@android:drawable/ic_menu_edit" android:layout_centerVertical="true" app:tint="#333333"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Order notes" android:textSize="14sp" android:textStyle="bold" android:textColor="#333333" android:layout_toEndOf="@id/icNote" android:layout_marginStart="8dp" android:layout_centerVertical="true"/>
-                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Add note >" android:textSize="14sp" android:textColor="#666666" android:layout_alignParentEnd="true" android:layout_centerVertical="true"/>
-            </RelativeLayout>
 
             <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="4dp">
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Estimated total" android:textSize="16sp" android:textStyle="bold" android:textColor="#333333" android:layout_alignParentStart="true" />
                 <TextView android:id="@+id/tvTotalAmount" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="₫ 0 VND" android:textSize="18sp" android:textStyle="bold" android:textColor="#333333" android:layout_alignParentEnd="true" />
             </RelativeLayout>
 
-            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Taxes, discounts and shipping calculated at checkout" android:textSize="12sp" android:textColor="#666666" android:layout_marginBottom="16dp"/>
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Thuế, giảm giá và phí vận chuyển được tính khi thanh toán" android:textSize="12sp" android:textColor="#666666" android:layout_marginBottom="16dp"/>
 
             <Button
                 android:id="@+id/btnContinue"

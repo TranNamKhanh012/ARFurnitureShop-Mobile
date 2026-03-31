@@ -1,13 +1,19 @@
 package com.example.arfurnitureshop.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 import com.example.arfurnitureshop.R;
 import com.example.arfurnitureshop.api.ApiService;
 import com.example.arfurnitureshop.models.UserProfile;
@@ -31,7 +37,6 @@ public class ProfileActivity extends AppCompatActivity {
         edtFullName = findViewById(R.id.edtFullName);
         edtEmail = findViewById(R.id.edtEmail);
         btnSave = findViewById(R.id.btnSave);
-        ImageView btnBack = findViewById(R.id.btnBack);
 
         // Khởi tạo Retrofit
         apiService = RetrofitClient.getClient().create(ApiService.class);
@@ -42,10 +47,35 @@ public class ProfileActivity extends AppCompatActivity {
         // ==========================================
         // ÁNH XẠ VÀ CÀI ĐẶT HEADER DÙNG CHUNG
         // ==========================================
-        android.widget.TextView tvTitle = findViewById(R.id.tvHeaderTitle);
-        tvTitle.setText("Hồ sơ của tôi");
+        View headerView = findViewById(R.id.headerProfile);
+        if (headerView != null) {
 
-        btnBack.setOnClickListener(v -> finish());
+            // 1. Đặt tiêu đề
+            TextView tvTitle = headerView.findViewById(R.id.tvHeaderTitle);
+            if (tvTitle != null) {
+                tvTitle.setText("Hồ sơ của tôi");
+            }
+
+            // 2. Xử lý nút Back (Quay lại)
+            ImageView btnBack = headerView.findViewById(R.id.btnBack);
+            if (btnBack != null) {
+                btnBack.setOnClickListener(v -> finish());
+            }
+
+            // 3. XỬ LÝ NÚT HOME (Về trang chủ)
+            ImageView btnHome = headerView.findViewById(R.id.btnHome);
+            if (btnHome != null) {
+                btnHome.setOnClickListener(v -> {
+                    Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
+                    // Xóa các trang trung gian để về thẳng Home cho mượt
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+        }
+
+        // Xử lý nút Lưu hồ sơ
         btnSave.setOnClickListener(v -> saveUserData());
     }
 

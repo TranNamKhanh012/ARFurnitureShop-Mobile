@@ -1,7 +1,9 @@
 package com.example.arfurnitureshop.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,8 +27,6 @@ import retrofit2.Response;
 public class CategoryProductsActivity extends AppCompatActivity {
 
     private RecyclerView rvCategoryProducts;
-    private TextView tvCategoryName;
-    private ImageView ivBack;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,22 +35,45 @@ public class CategoryProductsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_all_products);
 
         rvCategoryProducts = findViewById(R.id.rvAllProducts);
-        tvCategoryName = findViewById(R.id.tvPageTitle);
-        ivBack = findViewById(R.id.ivBack);
-
-        // Hiển thị lưới 2 cột
         rvCategoryProducts.setLayoutManager(new GridLayoutManager(this, 2));
-
-        ivBack.setOnClickListener(v -> finish());
 
         // Nhận dữ liệu từ CategoryAdapter truyền sang
         int categoryId = getIntent().getIntExtra("CATEGORY_ID", -1);
         String categoryName = getIntent().getStringExtra("CATEGORY_NAME");
 
-        if (categoryName != null) {
-            tvCategoryName.setText(categoryName);
+        // ==========================================
+        // ÁNH XẠ VÀ CÀI ĐẶT HEADER DÙNG CHUNG
+        // (Tìm qua id headerAllProducts vì dùng chung layout activity_all_products)
+        // ==========================================
+        View headerView = findViewById(R.id.headerAllProducts);
+        if (headerView != null) {
+
+            // 1. Gán tiêu đề động bằng tên danh mục
+            TextView tvTitle = headerView.findViewById(R.id.tvHeaderTitle);
+            if (tvTitle != null) {
+                tvTitle.setText(categoryName != null ? categoryName : "Sản phẩm theo danh mục");
+            }
+
+            // 2. Nút Back
+            ImageView btnBack = headerView.findViewById(R.id.btnBack);
+            if (btnBack != null) {
+                btnBack.setOnClickListener(v -> finish());
+            }
+
+            // 3. Nút Home
+            ImageView btnHome = headerView.findViewById(R.id.btnHome);
+            if (btnHome != null) {
+                btnHome.setOnClickListener(v -> {
+                    Intent intent = new Intent(CategoryProductsActivity.this, MainActivity.class);
+                    // Dọn dẹp RAM, quay thẳng về màn hình chính
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
         }
 
+        // Gọi API nạp dữ liệu
         if (categoryId != -1) {
             fetchProductsByCategory(categoryId);
         } else {

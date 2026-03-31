@@ -1,9 +1,9 @@
 package com.example.arfurnitureshop.activities;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -25,11 +25,9 @@ import com.example.arfurnitureshop.models.ReviewResponse;
 import com.example.arfurnitureshop.utils.CartManager;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -37,7 +35,7 @@ import retrofit2.Response;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
-    private com.example.arfurnitureshop.api.ApiService apiService;
+    private ApiService apiService;
     private Product currentProduct;
     // Biến lưu số lượng người dùng chọn mua
     private int selectedQuantity = 1;
@@ -50,18 +48,17 @@ public class ProductDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_detail);
-        apiService = com.example.arfurnitureshop.api.RetrofitClient.getClient()
-                .create(com.example.arfurnitureshop.api.ApiService.class);
+
+        apiService = RetrofitClient.getClient().create(ApiService.class);
+
         // ==========================================
         // 1. ÁNH XẠ TOÀN BỘ VIEW TỪ GIAO DIỆN
         // ==========================================
-        ImageView ivBack = findViewById(R.id.ivBack);
         ImageView ivProductImage = findViewById(R.id.ivProductImage);
         TextView tvProductName = findViewById(R.id.tvProductName);
         TextView tvProductPrice = findViewById(R.id.tvProductPrice);
         Button btnAddToCart = findViewById(R.id.btnAddToCart);
         Button btnBuyNow = findViewById(R.id.btnBuyNow);
-        ImageView ivCartTop = findViewById(R.id.ivCartTop);
         FloatingActionButton fabWishlist = findViewById(R.id.fabWishlist);
         FloatingActionButton fabArView = findViewById(R.id.fabArView);
 
@@ -70,17 +67,45 @@ public class ProductDetailActivity extends AppCompatActivity {
         TextView btnPlusDetail = findViewById(R.id.btnPlusDetail);
         TextView tvQuantityDetail = findViewById(R.id.tvQuantityDetail);
 
-        androidx.recyclerview.widget.RecyclerView rvProductReviews = findViewById(R.id.rvProductReviews);
-        android.widget.TextView tvEmptyReviews = findViewById(R.id.tvEmptyReviews);
-        rvProductReviews.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(this));
+        RecyclerView rvProductReviews = findViewById(R.id.rvProductReviews);
+        TextView tvEmptyReviews = findViewById(R.id.tvEmptyReviews);
+        rvProductReviews.setLayoutManager(new LinearLayoutManager(this));
 
+        // ==========================================
+        // 2. ÁNH XẠ HEADER DÙNG CHUNG VÀ XỬ LÝ NÚT BACK
+        // ==========================================
+        View headerView = findViewById(R.id.headerProductDetail);
+        if (headerView != null) {
+            TextView tvTitle = headerView.findViewById(R.id.tvHeaderTitle);
+            if (tvTitle != null) {
+                tvTitle.setText("Chi tiết sản phẩm");
+            }
+
+            ImageView btnBack = headerView.findViewById(R.id.btnBack);
+            if (btnBack != null) {
+                btnBack.setOnClickListener(v -> finish());
+            }
+            // =====================================
+            // THÊM SỰ KIỆN NÚT HOME VÀO ĐÂY
+            // =====================================
+            ImageView btnHome = headerView.findViewById(R.id.btnHome);
+            if (btnHome != null) {
+                btnHome.setOnClickListener(v -> {
+                    Intent intent = new Intent(this, MainActivity.class); // Về trang chủ
+                    // Xóa toàn bộ lịch sử các trang trước đó để tránh đầy RAM
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+        }
 
         // Ánh xạ RecyclerView đề xuất
         rvRecommended = findViewById(R.id.rvRecommended);
         rvRecommended.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
 
         // ==========================================
-        // 2. NHẬN VÀ HIỂN THỊ DỮ LIỆU SẢN PHẨM HIỆN TẠI
+        // 3. NHẬN VÀ HIỂN THỊ DỮ LIỆU SẢN PHẨM HIỆN TẠI
         // ==========================================
         int productId = getIntent().getIntExtra("PRODUCT_ID", -1);
         String name = getIntent().getStringExtra("PRODUCT_NAME");
@@ -137,9 +162,9 @@ public class ProductDetailActivity extends AppCompatActivity {
         String sizesString = getIntent().getStringExtra("PRODUCT_SIZES");
 
         if (sizesString != null && !sizesString.trim().isEmpty()) {
-            layoutSizeSelection.setVisibility(android.view.View.VISIBLE);
+            layoutSizeSelection.setVisibility(View.VISIBLE);
             String[] sizesArray = sizesString.split(",");
-            java.util.List<String> sizesList = new java.util.ArrayList<>();
+            List<String> sizesList = new ArrayList<>();
             for(String s : sizesArray) sizesList.add(s.trim());
 
             android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sizesList);
@@ -148,7 +173,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
             spinnerSizes.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
                 @Override
-                public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+                public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                     selectedSize = sizesList.get(position);
                 }
                 @Override
@@ -156,66 +181,64 @@ public class ProductDetailActivity extends AppCompatActivity {
             });
         } else if (name != null && name.toLowerCase().contains("giày")) {
             // BACKUP: Nếu API C# chưa kịp cập nhật nhưng tên là "Giày" thì tự mọc ra Size
-            layoutSizeSelection.setVisibility(android.view.View.VISIBLE);
+            layoutSizeSelection.setVisibility(View.VISIBLE);
             String[] defaultSizes = {"39", "40", "41", "42", "43"};
             android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_item, defaultSizes);
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinnerSizes.setAdapter(adapter);
             spinnerSizes.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
                 @Override
-                public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
+                public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
                     selectedSize = defaultSizes[position];
                 }
                 @Override
                 public void onNothingSelected(android.widget.AdapterView<?> parent) { }
             });
         }
-        // ... Code cũ lấy chi tiết sản phẩm của bạn ...
 
-        // GỌI API LẤY DANH SÁCH ĐÁNH GIÁ (Dán vào cuối hàm onCreate hoặc sau khi lấy xong Product)
-        ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
-        apiService.getProductReviews(productId).enqueue(new retrofit2.Callback<java.util.List<ReviewResponse>>() {
+        // GỌI API LẤY DANH SÁCH ĐÁNH GIÁ
+        apiService.getProductReviews(productId).enqueue(new Callback<List<ReviewResponse>>() {
             @Override
-            public void onResponse(retrofit2.Call<java.util.List<ReviewResponse>> call, retrofit2.Response<java.util.List<ReviewResponse>> response) {
+            public void onResponse(Call<List<ReviewResponse>> call, Response<List<ReviewResponse>> response) {
                 if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
                     ProductReviewAdapter reviewAdapter = new ProductReviewAdapter(response.body());
                     rvProductReviews.setAdapter(reviewAdapter);
-                    rvProductReviews.setVisibility(android.view.View.VISIBLE);
-                    tvEmptyReviews.setVisibility(android.view.View.GONE);
+                    rvProductReviews.setVisibility(View.VISIBLE);
+                    tvEmptyReviews.setVisibility(View.GONE);
                 } else {
-                    rvProductReviews.setVisibility(android.view.View.GONE);
-                    tvEmptyReviews.setVisibility(android.view.View.VISIBLE);
+                    rvProductReviews.setVisibility(View.GONE);
+                    tvEmptyReviews.setVisibility(View.VISIBLE);
                 }
             }
 
             @Override
-            public void onFailure(retrofit2.Call<java.util.List<ReviewResponse>> call, Throwable t) {}
+            public void onFailure(Call<List<ReviewResponse>> call, Throwable t) {}
         });
 
         // 1. Đã đổi tên biến thành imageName để tránh bị trùng lặp
         String imageName = getIntent().getStringExtra("PRODUCT_IMAGE");
         String fullImageUrl = "http://trannamkhanh-001-site1.jtempurl.com/images/" + imageName;
 
-// 2. Tạo chìa khóa màu cam
-        String userCam = "11300735"; // <-- Nhập đúng User của bạn
-        String passCam = "60-dayfreetrial";      // <-- Nhập đúng Pass của bạn
+        // 2. Tạo chìa khóa màu cam
+        String userCam = "11300735";
+        String passCam = "60-dayfreetrial";
         String credential = okhttp3.Credentials.basic(userCam, passCam);
 
-// 3. Gắn chìa khóa vào link
+        // 3. Gắn chìa khóa vào link
         com.bumptech.glide.load.model.GlideUrl glideUrlWithAuth = new com.bumptech.glide.load.model.GlideUrl(fullImageUrl,
                 new com.bumptech.glide.load.model.LazyHeaders.Builder()
                         .addHeader("Authorization", credential)
                         .build());
 
-// 4. Load ảnh
+        // 4. Load ảnh
         Glide.with(this)
                 .load(glideUrlWithAuth)
                 .placeholder(R.drawable.ic_launcher_background)
                 .error(R.drawable.ic_launcher_foreground)
-                .into(ivProductImage); // <--- Hãy xóa chữ này và điền đúng tên biến ImageView của bạn vào (ví dụ: ivProduct)
+                .into(ivProductImage);
 
         // ==========================================
-        // 3. XỬ LÝ SỰ KIỆN TĂNG/GIẢM SỐ LƯỢNG
+        // 4. XỬ LÝ SỰ KIỆN TĂNG/GIẢM SỐ LƯỢNG
         // ==========================================
         btnMinusDetail.setOnClickListener(v -> {
             if (selectedQuantity > 1) {
@@ -230,17 +253,14 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
         // ==========================================
-        // 4. GỌI API LẤY SẢN PHẨM ĐỀ XUẤT
+        // 5. GỌI API LẤY SẢN PHẨM ĐỀ XUẤT
         // ==========================================
         fetchRecommendedProducts(productId);
 
         // ==========================================
-        // 5. CÁC SỰ KIỆN NÚT BẤM (GIỎ HÀNG, TIM, AR)
+        // 6. CÁC SỰ KIỆN NÚT BẤM (GIỎ HÀNG, TIM, AR)
         // ==========================================
-        ivBack.setOnClickListener(v -> finish());
-        ivCartTop.setOnClickListener(v -> startActivity(new Intent(ProductDetailActivity.this, CartActivity.class)));
 
-        // Nút thêm vào giỏ
         // Nút thêm vào giỏ
         btnAddToCart.setOnClickListener(v -> {
             android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
@@ -259,17 +279,17 @@ public class ProductDetailActivity extends AppCompatActivity {
 
                 // 2. GỌI API 1 LẦN DUY NHẤT (Gửi kèm số lượng và Size)
                 String finalSize = selectedSize != null ? selectedSize : ""; // Tránh gửi null
-                apiService.addToCart(userId, productId, selectedQuantity, finalSize).enqueue(new retrofit2.Callback<Void>() {
+                apiService.addToCart(userId, productId, selectedQuantity, finalSize).enqueue(new Callback<Void>() {
                     @Override
-                    public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
+                    public void onResponse(Call<Void> call, Response<Void> response) {}
                     @Override
-                    public void onFailure(retrofit2.Call<Void> call, Throwable t) {}
+                    public void onFailure(Call<Void> call, Throwable t) {}
                 });
             }
         });
 
         // ==========================================
-        // 5. XỬ LÝ NÚT BUY NOW: THANH TOÁN LUÔN
+        // 7. XỬ LÝ NÚT BUY NOW: THANH TOÁN LUÔN
         // ==========================================
         btnBuyNow.setOnClickListener(v -> {
             android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
@@ -284,7 +304,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                 Intent intent = new Intent(ProductDetailActivity.this, CheckoutActivity.class);
                 intent.putExtra("TOTAL_PRICE", totalPrice);
 
-                // [MỚI] GỬI CỜ BÁO HIỆU ĐÂY LÀ "MUA NGAY" KÈM CHI TIẾT SẢN PHẨM
+                // GỬI CỜ BÁO HIỆU ĐÂY LÀ "MUA NGAY" KÈM CHI TIẾT SẢN PHẨM
                 intent.putExtra("IS_BUY_NOW", true);
                 intent.putExtra("BUY_NOW_ID", currentProduct.getId());
                 intent.putExtra("BUY_NOW_NAME", currentProduct.getName());
@@ -293,8 +313,8 @@ public class ProductDetailActivity extends AppCompatActivity {
                 intent.putExtra("BUY_NOW_QTY", selectedQuantity);
                 intent.putExtra("BUY_NOW_DISCOUNT", currentProduct.getDiscount());
 
-                // Lưu ý: Nếu code của bạn có biến selectedSize cho Giày thì thay "" bằng biến đó nhé!
-                intent.putExtra("BUY_NOW_SIZE", "");
+                String finalSize = selectedSize != null ? selectedSize : "";
+                intent.putExtra("BUY_NOW_SIZE", finalSize);
 
                 startActivity(intent);
             }
@@ -315,28 +335,26 @@ public class ProductDetailActivity extends AppCompatActivity {
                 if (com.example.arfurnitureshop.models.WishlistManager.isFavorite(currentId)) {
                     com.example.arfurnitureshop.models.WishlistManager.remove(currentId);
                     fabWishlist.setImageResource(R.drawable.ic_heart_empty);
-                    apiService.removeFromWishlist(userId, currentId).enqueue(new retrofit2.Callback<Void>() {
+                    apiService.removeFromWishlist(userId, currentId).enqueue(new Callback<Void>() {
                         @Override
-                        public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
+                        public void onResponse(Call<Void> call, Response<Void> response) {}
                         @Override
-                        public void onFailure(retrofit2.Call<Void> call, Throwable t) {}
+                        public void onFailure(Call<Void> call, Throwable t) {}
                     });
                 } else {
                     com.example.arfurnitureshop.models.WishlistManager.add(currentProduct);
                     fabWishlist.setImageResource(R.drawable.ic_heart_filled);
-                    apiService.addToWishlist(userId, currentId).enqueue(new retrofit2.Callback<Void>() {
+                    apiService.addToWishlist(userId, currentId).enqueue(new Callback<Void>() {
                         @Override
-                        public void onResponse(retrofit2.Call<Void> call, retrofit2.Response<Void> response) {}
+                        public void onResponse(Call<Void> call, Response<Void> response) {}
                         @Override
-                        public void onFailure(retrofit2.Call<Void> call, Throwable t) {}
+                        public void onFailure(Call<Void> call, Throwable t) {}
                     });
                 }
             }
         });
 
         fabArView.setOnClickListener(v -> {
-            // Tạm thời bỏ qua logic kiểm tra mặt hàng
-            // Ép nút này chuyển thẳng sang trang Camera Face AR để Test
             Intent intent = new Intent(ProductDetailActivity.this, FaceArActivity.class);
             startActivity(intent);
         });
@@ -345,7 +363,7 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     // Hàm gọi API nạp sản phẩm đề xuất
     private void fetchRecommendedProducts(int currentProductId) {
-        RetrofitClient.getClient().create(ApiService.class).getProducts().enqueue(new Callback<List<Product>>() {
+        apiService.getProducts().enqueue(new Callback<List<Product>>() {
             @Override
             public void onResponse(Call<List<Product>> call, Response<List<Product>> response) {
                 if (response.isSuccessful() && response.body() != null) {
@@ -364,7 +382,7 @@ public class ProductDetailActivity extends AppCompatActivity {
                     int limit = Math.min(recommendedList.size(), 5);
                     List<Product> finalList = new ArrayList<>(recommendedList.subList(0, limit));
 
-                    // Nạp vào RecyclerView Đề xuất (Dùng chung ProductAdapter)
+                    // Nạp vào RecyclerView Đề xuất
                     recommendedAdapter = new ProductAdapter(finalList);
                     rvRecommended.setAdapter(recommendedAdapter);
                     com.example.arfurnitureshop.utils.BadgeUtils.fetchAndCacheBadges(ProductDetailActivity.this);
@@ -376,8 +394,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         });
     }
-
-
 
     @Override
     protected void onResume() {

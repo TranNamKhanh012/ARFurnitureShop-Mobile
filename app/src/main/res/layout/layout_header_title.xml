@@ -31,7 +31,11 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <View
+    <ImageView
+        android:id="@+id/btnHome"
         android:layout_width="28dp"
-        android:layout_height="28dp" />
+        android:layout_height="28dp"
+        android:src="@drawable/ic_home"
+        android:padding="4dp"
+        app:tint="#333333" />
 </LinearLayout>

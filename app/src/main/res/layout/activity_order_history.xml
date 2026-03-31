@@ -5,7 +5,9 @@
     android:orientation="vertical"
     android:background="#F5F5F5">
 
-    <include layout="@layout/layout_header_title" />
+    <include
+        layout="@layout/layout_header_title"
+        android:id="@+id/headerOrderHistory"/>
 
     <TextView
         android:id="@+id/tvNoOrders"

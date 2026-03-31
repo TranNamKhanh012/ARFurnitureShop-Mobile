@@ -5,43 +5,30 @@
     android:orientation="vertical"
     android:background="#F5F5F5">
 
-    <LinearLayout
+    <include
+        android:id="@+id/headerPendingReviews"
+        layout="@layout/layout_header_title" />
+
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="#FFFFFF"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:elevation="4dp">
-        <ImageView
-            android:id="@+id/ivBackPendingReviews"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="12dp"
-            android:src="@android:drawable/ic_menu_revert" />
+        android:layout_height="match_parent">
+
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="Chờ đánh giá"
-            android:textColor="#333333"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+            android:id="@+id/tvNoPending"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="Bạn không có sản phẩm nào cần đánh giá."
+            android:textSize="16sp"
+            android:textColor="#888888"
+            android:visibility="gone"/>
 
-    <TextView
-        android:id="@+id/tvNoPending"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="Bạn không có sản phẩm nào cần đánh giá."
-        android:textSize="16sp"
-        android:visibility="gone"/>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvPendingReviews"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="8dp"
-        android:paddingBottom="16dp"
-        android:clipToPadding="false"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvPendingReviews"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp"
+            android:clipToPadding="false"/>
+    </FrameLayout>
 </LinearLayout>

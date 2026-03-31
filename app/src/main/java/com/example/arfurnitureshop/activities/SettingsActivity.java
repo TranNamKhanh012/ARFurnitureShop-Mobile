@@ -5,9 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -32,21 +34,43 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        // --- 1. Ánh xạ các nút ---
-        ImageView ivBack = findViewById(R.id.ivBack);
+        // --- 1. ÁNH XẠ CÁC VIEW ---
         Switch switchDarkMode = findViewById(R.id.switchDarkMode);
         LinearLayout btnChangePassword = findViewById(R.id.btnChangePassword);
         LinearLayout btnDeleteAccount = findViewById(R.id.btnDeleteAccount);
 
-        // Đặt tiêu đề
-        android.widget.TextView tvTitle = findViewById(R.id.tvHeaderTitle);
-        tvTitle.setText("Cài đặt hệ thống");
+        // ==========================================
+        // 2. ÁNH XẠ VÀ CÀI ĐẶT HEADER DÙNG CHUNG
+        // ==========================================
+        View headerView = findViewById(R.id.headerSettings);
+        if (headerView != null) {
 
-        // Bắt sự kiện nút Back dùng chung
-        android.widget.ImageView btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> finish());
+            // Đặt tiêu đề
+            TextView tvTitle = headerView.findViewById(R.id.tvHeaderTitle);
+            if (tvTitle != null) {
+                tvTitle.setText("Cài đặt hệ thống");
+            }
 
-        // --- 2. Xử lý Dark Mode ---
+            // Xử lý nút Back (Quay lại)
+            ImageView btnBack = headerView.findViewById(R.id.btnBack);
+            if (btnBack != null) {
+                btnBack.setOnClickListener(v -> finish());
+            }
+
+            // Xử lý nút Home (Về trang chủ)
+            ImageView btnHome = headerView.findViewById(R.id.btnHome);
+            if (btnHome != null) {
+                btnHome.setOnClickListener(v -> {
+                    Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
+                    // Xóa toàn bộ trang trung gian để về thẳng Home
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+        }
+
+        // --- 3. XỬ LÝ DARK MODE ---
         sharedPreferences = getSharedPreferences("AppSettings", Context.MODE_PRIVATE);
         boolean isDarkMode = sharedPreferences.getBoolean("DARK_MODE", false);
         if (switchDarkMode != null) {
@@ -58,7 +82,7 @@ public class SettingsActivity extends AppCompatActivity {
             });
         }
 
-        // --- 3. Xử lý Đổi mật khẩu ---
+        // --- 4. XỬ LÝ ĐỔI MẬT KHẨU ---
         if (btnChangePassword != null) {
             btnChangePassword.setOnClickListener(v -> {
                 SharedPreferences userPrefs = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE);
@@ -70,7 +94,7 @@ public class SettingsActivity extends AppCompatActivity {
             });
         }
 
-        // --- 4. Xử lý Xóa tài khoản ---
+        // --- 5. XỬ LÝ XÓA TÀI KHOẢN ---
         if (btnDeleteAccount != null) {
             btnDeleteAccount.setOnClickListener(v -> checkAndShowDeleteDialog());
         }

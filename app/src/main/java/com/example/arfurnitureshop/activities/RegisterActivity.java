@@ -42,8 +42,22 @@ public class RegisterActivity extends AppCompatActivity {
             String name = etName.getText().toString().trim();
             String email = etEmail.getText().toString().trim();
 
+            // 1. Kiểm tra không được để trống
             if (user.isEmpty() || pass.isEmpty() || name.isEmpty() || email.isEmpty()) {
                 Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // ==========================================
+            // 2. KIỂM TRA ĐIỀU KIỆN MẬT KHẨU VÀ EMAIL
+            // ==========================================
+            if (pass.length() < 6) {
+                Toast.makeText(this, "Mật khẩu phải có tối thiểu 6 ký tự!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!email.toLowerCase().endsWith("@gmail.com")) {
+                Toast.makeText(this, "Vui lòng sử dụng địa chỉ @gmail.com!", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -68,7 +82,6 @@ public class RegisterActivity extends AppCompatActivity {
                         finish();
                     } else {
                         // Backend trả về lỗi (Ví dụ: mã 400 - Trùng tên đăng nhập)
-                        // Trong C# bạn viết: return BadRequest(new { message = "Tên đăng nhập đã tồn tại!" });
                         Toast.makeText(RegisterActivity.this, "Tên đăng nhập đã tồn tại, vui lòng chọn tên khác!", Toast.LENGTH_LONG).show();
                         Log.e("API_ERROR", "Mã lỗi: " + response.code());
                     }
