@@ -159,6 +159,9 @@ public interface ApiService {
     // Lấy danh sách đánh giá của 1 sản phẩm
     @GET("api/Reviews/product/{productId}")
     Call<java.util.List<com.example.arfurnitureshop.models.ReviewResponse>> getProductReviews(@Path("productId") int productId);
+    // Gọi API Quên mật khẩu
+    @POST("api/Auth/forgot-password")
+    Call<com.google.gson.JsonObject> forgotPassword(@Body java.util.HashMap<String, String> body);
 
 
 }

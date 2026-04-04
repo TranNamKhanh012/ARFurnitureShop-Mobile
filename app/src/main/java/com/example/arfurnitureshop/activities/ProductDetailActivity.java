@@ -37,7 +37,6 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     private ApiService apiService;
     private Product currentProduct;
-    // Biến lưu số lượng người dùng chọn mua
     private int selectedQuantity = 1;
 
     private RecyclerView rvRecommended;
@@ -57,12 +56,15 @@ public class ProductDetailActivity extends AppCompatActivity {
         ImageView ivProductImage = findViewById(R.id.ivProductImage);
         TextView tvProductName = findViewById(R.id.tvProductName);
         TextView tvProductPrice = findViewById(R.id.tvProductPrice);
+
+        // MỚI THÊM: Ánh xạ phần mô tả sản phẩm
+        TextView tvProductDescription = findViewById(R.id.tvProductDescription);
+
         Button btnAddToCart = findViewById(R.id.btnAddToCart);
         Button btnBuyNow = findViewById(R.id.btnBuyNow);
         FloatingActionButton fabWishlist = findViewById(R.id.fabWishlist);
         FloatingActionButton fabArView = findViewById(R.id.fabArView);
 
-        // Ánh xạ các nút số lượng
         TextView btnMinusDetail = findViewById(R.id.btnMinusDetail);
         TextView btnPlusDetail = findViewById(R.id.btnPlusDetail);
         TextView tvQuantityDetail = findViewById(R.id.tvQuantityDetail);
@@ -85,14 +87,10 @@ public class ProductDetailActivity extends AppCompatActivity {
             if (btnBack != null) {
                 btnBack.setOnClickListener(v -> finish());
             }
-            // =====================================
-            // THÊM SỰ KIỆN NÚT HOME VÀO ĐÂY
-            // =====================================
             ImageView btnHome = headerView.findViewById(R.id.btnHome);
             if (btnHome != null) {
                 btnHome.setOnClickListener(v -> {
-                    Intent intent = new Intent(this, MainActivity.class); // Về trang chủ
-                    // Xóa toàn bộ lịch sử các trang trước đó để tránh đầy RAM
+                    Intent intent = new Intent(this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
@@ -100,7 +98,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         }
 
-        // Ánh xạ RecyclerView đề xuất
         rvRecommended = findViewById(R.id.rvRecommended);
         rvRecommended.setLayoutManager(new LinearLayoutManager(this, RecyclerView.HORIZONTAL, false));
 
@@ -112,9 +109,10 @@ public class ProductDetailActivity extends AppCompatActivity {
         double originalPrice = getIntent().getDoubleExtra("PRODUCT_PRICE", 0);
         String imageUrl = getIntent().getStringExtra("PRODUCT_IMAGE");
         String modelUrl = getIntent().getStringExtra("PRODUCT_MODEL");
-
-        // Nhận thêm % giảm giá từ Adapter truyền sang
         int discount = getIntent().getIntExtra("PRODUCT_DISCOUNT", 0);
+
+        // MỚI THÊM: Nhận dữ liệu Mô tả (Description) từ trang trước truyền sang
+        String description = getIntent().getStringExtra("PRODUCT_DESCRIPTION");
 
         currentProduct = new Product();
         currentProduct.setId(productId);
@@ -122,10 +120,18 @@ public class ProductDetailActivity extends AppCompatActivity {
         currentProduct.setImageUrl(imageUrl);
         currentProduct.setModelUrl(modelUrl);
         currentProduct.setPrice(originalPrice);
-        currentProduct.setDiscount(discount); // Lưu discount chuẩn
+        currentProduct.setDiscount(discount);
+        currentProduct.setDescription(description); // Set vào model nếu cần dùng sau này
         currentProduct.setRating(5.0);
 
         if (name != null) tvProductName.setText(name);
+
+        // MỚI THÊM: Hiển thị mô tả lên màn hình
+        if (description != null && !description.trim().isEmpty()) {
+            tvProductDescription.setText(description);
+        } else {
+            tvProductDescription.setText("Đang cập nhật mô tả cho sản phẩm này...");
+        }
 
         // --- TÍNH TOÁN GIÁ SAU KHI GIẢM ---
         double finalPrice = originalPrice;
@@ -133,23 +139,16 @@ public class ProductDetailActivity extends AppCompatActivity {
             finalPrice = originalPrice - (originalPrice * discount / 100.0);
         }
 
-        // --- VẼ GIÁ GẠCH NGANG TRỰC TIẾP LÊN MÀN HÌNH ---
         java.text.NumberFormat formatVN = java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("vi", "VN"));
         if (discount > 0) {
             String oldPriceStr = formatVN.format(originalPrice);
             String newPriceStr = formatVN.format(finalPrice);
             String fullText = oldPriceStr + "   " + newPriceStr;
-
             android.text.SpannableString spannable = new android.text.SpannableString(fullText);
-
-            // Gạch ngang và bôi xám giá cũ
             spannable.setSpan(new android.text.style.StrikethroughSpan(), 0, oldPriceStr.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             spannable.setSpan(new android.text.style.ForegroundColorSpan(android.graphics.Color.GRAY), 0, oldPriceStr.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-            // In đậm và tô đỏ giá mới
             spannable.setSpan(new android.text.style.ForegroundColorSpan(android.graphics.Color.RED), oldPriceStr.length() + 3, fullText.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             spannable.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), oldPriceStr.length() + 3, fullText.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
             tvProductPrice.setText(spannable);
         } else {
             tvProductPrice.setText(formatVN.format(originalPrice));
@@ -180,7 +179,6 @@ public class ProductDetailActivity extends AppCompatActivity {
                 public void onNothingSelected(android.widget.AdapterView<?> parent) { }
             });
         } else if (name != null && name.toLowerCase().contains("giày")) {
-            // BACKUP: Nếu API C# chưa kịp cập nhật nhưng tên là "Giày" thì tự mọc ra Size
             layoutSizeSelection.setVisibility(View.VISIBLE);
             String[] defaultSizes = {"39", "40", "41", "42", "43"};
             android.widget.ArrayAdapter<String> adapter = new android.widget.ArrayAdapter<>(this, android.R.layout.simple_spinner_item, defaultSizes);
@@ -210,27 +208,22 @@ public class ProductDetailActivity extends AppCompatActivity {
                     tvEmptyReviews.setVisibility(View.VISIBLE);
                 }
             }
-
             @Override
             public void onFailure(Call<List<ReviewResponse>> call, Throwable t) {}
         });
 
-        // 1. Đã đổi tên biến thành imageName để tránh bị trùng lặp
         String imageName = getIntent().getStringExtra("PRODUCT_IMAGE");
         String fullImageUrl = "http://trannamkhanh-001-site1.jtempurl.com/images/" + imageName;
 
-        // 2. Tạo chìa khóa màu cam
         String userCam = "11300735";
         String passCam = "60-dayfreetrial";
         String credential = okhttp3.Credentials.basic(userCam, passCam);
 
-        // 3. Gắn chìa khóa vào link
         com.bumptech.glide.load.model.GlideUrl glideUrlWithAuth = new com.bumptech.glide.load.model.GlideUrl(fullImageUrl,
                 new com.bumptech.glide.load.model.LazyHeaders.Builder()
                         .addHeader("Authorization", credential)
                         .build());
 
-        // 4. Load ảnh
         Glide.with(this)
                 .load(glideUrlWithAuth)
                 .placeholder(R.drawable.ic_launcher_background)
@@ -252,16 +245,11 @@ public class ProductDetailActivity extends AppCompatActivity {
             tvQuantityDetail.setText(String.valueOf(selectedQuantity));
         });
 
-        // ==========================================
-        // 5. GỌI API LẤY SẢN PHẨM ĐỀ XUẤT
-        // ==========================================
         fetchRecommendedProducts(productId);
 
         // ==========================================
-        // 6. CÁC SỰ KIỆN NÚT BẤM (GIỎ HÀNG, TIM, AR)
+        // 6. CÁC SỰ KIỆN NÚT BẤM
         // ==========================================
-
-        // Nút thêm vào giỏ
         btnAddToCart.setOnClickListener(v -> {
             android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
             boolean isLoggedIn = prefs.getBoolean("IS_LOGGED_IN", false);
@@ -271,14 +259,11 @@ public class ProductDetailActivity extends AppCompatActivity {
                 startActivity(new Intent(ProductDetailActivity.this, LoginActivity.class));
             } else {
                 int userId = prefs.getInt("USER_ID", -1);
-
-                // 1. Lưu vào SQLite trên máy (như cũ)
                 CartManager.getInstance(ProductDetailActivity.this).add(new CartItem(currentProduct, selectedQuantity, selectedSize));
                 Toast.makeText(ProductDetailActivity.this, "Đã thêm " + selectedQuantity + " " + currentProduct.getName() + " vào giỏ!", Toast.LENGTH_SHORT).show();
                 com.example.arfurnitureshop.utils.BadgeUtils.fetchAndCacheBadges(ProductDetailActivity.this);
 
-                // 2. GỌI API 1 LẦN DUY NHẤT (Gửi kèm số lượng và Size)
-                String finalSize = selectedSize != null ? selectedSize : ""; // Tránh gửi null
+                String finalSize = selectedSize != null ? selectedSize : "";
                 apiService.addToCart(userId, productId, selectedQuantity, finalSize).enqueue(new Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {}
@@ -288,9 +273,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         });
 
-        // ==========================================
-        // 7. XỬ LÝ NÚT BUY NOW: THANH TOÁN LUÔN
-        // ==========================================
         btnBuyNow.setOnClickListener(v -> {
             android.content.SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
             boolean isLoggedIn = prefs.getBoolean("IS_LOGGED_IN", false);
@@ -304,7 +286,6 @@ public class ProductDetailActivity extends AppCompatActivity {
                 Intent intent = new Intent(ProductDetailActivity.this, CheckoutActivity.class);
                 intent.putExtra("TOTAL_PRICE", totalPrice);
 
-                // GỬI CỜ BÁO HIỆU ĐÂY LÀ "MUA NGAY" KÈM CHI TIẾT SẢN PHẨM
                 intent.putExtra("IS_BUY_NOW", true);
                 intent.putExtra("BUY_NOW_ID", currentProduct.getId());
                 intent.putExtra("BUY_NOW_NAME", currentProduct.getName());
@@ -312,7 +293,6 @@ public class ProductDetailActivity extends AppCompatActivity {
                 intent.putExtra("BUY_NOW_IMAGE", currentProduct.getImageUrl());
                 intent.putExtra("BUY_NOW_QTY", selectedQuantity);
                 intent.putExtra("BUY_NOW_DISCOUNT", currentProduct.getDiscount());
-
                 String finalSize = selectedSize != null ? selectedSize : "";
                 intent.putExtra("BUY_NOW_SIZE", finalSize);
 
@@ -320,7 +300,6 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         });
 
-        // Nút tim và AR giữ nguyên logic cũ của bạn
         boolean isCurrentlyFav = com.example.arfurnitureshop.models.WishlistManager.isFavorite(currentProduct.getId());
         if (isCurrentlyFav) fabWishlist.setImageResource(R.drawable.ic_heart_filled);
         else fabWishlist.setImageResource(R.drawable.ic_heart_empty);
@@ -361,7 +340,6 @@ public class ProductDetailActivity extends AppCompatActivity {
 
     }
 
-    // Hàm gọi API nạp sản phẩm đề xuất
     private void fetchRecommendedProducts(int currentProductId) {
         apiService.getProducts().enqueue(new Callback<List<Product>>() {
             @Override
@@ -370,19 +348,16 @@ public class ProductDetailActivity extends AppCompatActivity {
                     List<Product> fullList = response.body();
                     List<Product> recommendedList = new ArrayList<>();
 
-                    // Lọc bỏ sản phẩm hiện tại ra khỏi danh sách đề xuất
                     for (Product p : fullList) {
                         if (p.getId() != currentProductId) {
                             recommendedList.add(p);
                         }
                     }
 
-                    // Trộn ngẫu nhiên danh sách và lấy 5 sản phẩm đầu tiên
                     Collections.shuffle(recommendedList);
                     int limit = Math.min(recommendedList.size(), 5);
                     List<Product> finalList = new ArrayList<>(recommendedList.subList(0, limit));
 
-                    // Nạp vào RecyclerView Đề xuất
                     recommendedAdapter = new ProductAdapter(finalList);
                     rvRecommended.setAdapter(recommendedAdapter);
                     com.example.arfurnitureshop.utils.BadgeUtils.fetchAndCacheBadges(ProductDetailActivity.this);

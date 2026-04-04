@@ -41,7 +41,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Vũ Trụ Phụ Kiện"
+                android:text="ACCESSORIES"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="#000051"
@@ -58,7 +58,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Chào mừng bạn đến với Vũ Trụ Phụ Kiện! Chúng tôi tự hào là điểm đến lý tưởng cung cấp các mẫu Kính mắt, Đồng hồ và Giày dép thời trang, hiện đại nhất. Với cam kết chất lượng và dịch vụ tận tâm, chúng tôi hy vọng mang lại trải nghiệm mua sắm tuyệt vời cho bạn."
+                android:text="Chào mừng bạn đến với Accessories! Chúng tôi tự hào là điểm đến lý tưởng cung cấp các mẫu Kính mắt, Đồng hồ và Giày dép thời trang, hiện đại nhất. Với cam kết chất lượng và dịch vụ tận tâm, chúng tôi hy vọng mang lại trải nghiệm mua sắm tuyệt vời cho bạn."
                 android:textSize="16sp"
                 android:textColor="#555555"
                 android:lineSpacingExtra="6dp"
@@ -90,7 +90,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📞 Hotline: 0123.456.789"
+                        android:text="📞 Hotline: 0941.655.919"
                         android:textSize="15sp"
                         android:textColor="#555555"
                         android:layout_marginBottom="12dp"/>
@@ -98,7 +98,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📧 Email: support@vutruphukien.com"
+                        android:text="📧 Email: accessories@gmail.com"
                         android:textSize="15sp"
                         android:textColor="#555555"
                         android:layout_marginBottom="12dp"/>

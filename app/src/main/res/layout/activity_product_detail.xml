@@ -118,7 +118,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Quantity"
+                    android:text="Số lượng"
                     android:textColor="#555"
                     android:textSize="16sp" />
 
@@ -161,15 +161,17 @@
             </LinearLayout>
 
             <TextView
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Description"
+                android:text="Mô tả"
                 android:textColor="#333"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/tvProductDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
@@ -189,7 +191,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="User Reviews"
+                android:text="Đánh giá của người dùng"
                 android:textColor="#333"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -229,7 +231,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:text="Recommended products"
+                android:text="Sản phẩm có thể bạn sẽ thích"
                 android:textColor="#333"
                 android:textSize="18sp"
                 android:textStyle="bold" />

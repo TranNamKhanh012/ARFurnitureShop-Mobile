@@ -71,7 +71,9 @@
         <activity android:name=".activities.OrderDetailActivity" />
         <activity android:name=".activities.PendingReviewsActivity" />
         <activity android:name=".activities.ChatAiActivity" />
-
+        <activity
+            android:name=".activities.ForgotPasswordActivity"
+            android:exported="false" />
     </application>
 
 

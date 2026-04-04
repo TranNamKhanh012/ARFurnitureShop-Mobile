@@ -95,10 +95,10 @@
                         app:cardElevation="0dp">
 
                         <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
                             android:layout_gravity="center"
-                            android:src="@android:drawable/ic_menu_myplaces"
+                            android:src="@drawable/logo1"
                             app:tint="#FFFFFF" />
                     </androidx.cardview.widget.CardView>
 
@@ -136,7 +136,7 @@
                     android:gravity="center_vertical"
                     android:paddingHorizontal="24dp">
                     <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_menu_mylocation" app:tint="#757575" />
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:text="My Addresses" android:textColor="#333333" android:textSize="16sp" />
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:text="Địa chỉ của tôi" android:textColor="#333333" android:textSize="16sp" />
                     <ImageView android:layout_width="20dp" android:layout_height="20dp" android:src="@android:drawable/ic_media_next" app:tint="#BDBDBD" />
                 </LinearLayout>
 
@@ -161,7 +161,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_weight="1"
-                        android:text="Order History"
+                        android:text="Lịch sử mua hàng"
                         android:textColor="#333333"
                         android:textSize="16sp" />
                     <ImageView
@@ -182,8 +182,17 @@
                     android:foreground="?android:attr/selectableItemBackground"
                     android:gravity="center_vertical"
                     android:paddingHorizontal="24dp">
-                    <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@android:drawable/ic_lock_power_off" app:tint="#D32F2F" />
-                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_marginStart="16dp" android:layout_weight="1" android:text="Sign Out" android:textColor="#D32F2F" android:textSize="16sp" />
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_lock_power_off"
+                        app:tint="#D32F2F" />
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:text="Đăng xuất" android:textColor="#D32F2F" android:textSize="16sp" />
                 </LinearLayout>
 
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" />

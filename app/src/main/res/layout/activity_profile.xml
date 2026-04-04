@@ -100,9 +100,9 @@
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:backgroundTint="#F3F4F6"
+            android:backgroundTint="#3B82F6"
             android:text="Save"
-            android:textColor="#9CA3AF"
+            android:textColor="#FFFFFF"
             android:textSize="16sp"
             android:textStyle="bold"
             app:cornerRadius="8dp" />
