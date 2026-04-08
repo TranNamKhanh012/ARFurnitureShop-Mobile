@@ -20,7 +20,7 @@ import okhttp3.Response;
 public class GeminiHelper {
 
     // ĐIỀN API KEY CỦA BẠN VÀO GIỮA 2 DẤU NGOẶC KÉP BÊN DƯỚI
-    private static final String API_KEY = "Teo them lai";
+    private static final String API_KEY = "AIzaSyBq-LJAL0I6ujYCdVVAjf1kB2I0hn9d7IM";
 
     // Mình đã thêm .trim() để tự động xóa các dấu cách thừa nếu bạn lỡ copy nhầm
     // Dùng lại model gemini-1.5-flash tiêu chuẩn

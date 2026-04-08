@@ -262,7 +262,7 @@
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:backgroundTint="#FFFFFF"
-            android:text="Add to cart"
+            android:text="Thêm vào giỏ"
             android:textColor="#1E88E5"
             app:strokeColor="#1E88E5"
             app:strokeWidth="1dp" />
@@ -274,7 +274,7 @@
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:backgroundTint="#1E88E5"
-            android:text="Buy Now"
+            android:text="Mua ngay"
             android:textColor="#FFF" />
     </LinearLayout>
 </RelativeLayout>

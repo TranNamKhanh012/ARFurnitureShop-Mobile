@@ -36,7 +36,7 @@
         android:layout_weight="1"
         android:layout_marginHorizontal="12dp"
         android:background="@drawable/bg_square_edittext"
-        android:text="Tìm kiếm sản phẩm..."
+        android:text="Tìm kiếm ..."
         android:textColor="#888888"
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp"

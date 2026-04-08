@@ -70,7 +70,9 @@
         <activity android:name=".activities.OrderHistoryActivity" />
         <activity android:name=".activities.OrderDetailActivity" />
         <activity android:name=".activities.PendingReviewsActivity" />
-        <activity android:name=".activities.ChatAiActivity" />
+        <activity android:name=".activities.ChatAiActivity"
+            android:windowSoftInputMode="adjustResize"
+            android:exported="false"/>
         <activity
             android:name=".activities.ForgotPasswordActivity"
             android:exported="false" />

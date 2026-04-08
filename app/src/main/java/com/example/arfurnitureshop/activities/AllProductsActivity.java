@@ -44,13 +44,17 @@ public class AllProductsActivity extends AppCompatActivity {
     private String currentSortBy = "date_desc";
     private boolean showOnlyDiscount = false;
 
-    private final String[] sortOptionsArray = {"Newest", "Price: Low to High", "Price: High to Low", "Rating: High to Low", "Oldest"};
+    private final String[] sortOptionsArray = {
+            "Mới nhất",
+            "Giá: Thấp đến Cao",
+            "Giá: Cao đến Thấp",
+            "Cũ nhất"
+    };
     private final Map<String, String> sortByValueMap = new HashMap<String, String>() {{
-        put("Newest", "date_desc");
-        put("Price: Low to High", "price_asc");
-        put("Price: High to Low", "price_desc");
-        put("Rating: High to Low", "rating_desc");
-        put("Oldest", "date_asc");
+        put("Mới nhất", "rating_desc");
+        put("Giá: Thấp đến Cao", "price_asc");
+        put("Giá: Cao đến Thấp", "price_desc");
+        put("Cũ nhất", "date_asc");
     }};
 
     @Override
@@ -160,19 +164,19 @@ public class AllProductsActivity extends AppCompatActivity {
         layoutDialog.setPadding(48, 48, 48, 12);
 
         EditText edtMinPrice = new EditText(this);
-        edtMinPrice.setHint("Min Price (VD: 1000000)");
+        edtMinPrice.setHint("Giá tối thiểu (VD: 1000000)");
         edtMinPrice.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
         if (currentMinPrice != null) edtMinPrice.setText(String.valueOf(currentMinPrice.intValue()));
         layoutDialog.addView(edtMinPrice);
 
         EditText edtMaxPrice = new EditText(this);
-        edtMaxPrice.setHint("Max Price (VD: 5000000)");
+        edtMaxPrice.setHint("Giá tối đa (VD: 5000000)");
         edtMaxPrice.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
         if (currentMaxPrice != null) edtMaxPrice.setText(String.valueOf(currentMaxPrice.intValue()));
         layoutDialog.addView(edtMaxPrice);
 
         new AlertDialog.Builder(this)
-                .setTitle("Filter by Price")
+                .setTitle("Lọc theo giá")
                 .setView(layoutDialog)
                 .setPositiveButton("APPLY", (dialog, which) -> {
                     String min = edtMinPrice.getText().toString().trim();

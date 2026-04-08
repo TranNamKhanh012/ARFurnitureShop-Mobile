@@ -36,11 +36,9 @@ import retrofit2.Response;
 
 public class CheckoutActivity extends AppCompatActivity {
 
-    // Các View mới cho phần Địa chỉ
     private TextView tvReceiverNamePhone, tvFullAddress, tvNoAddress, btnChangeAddress;
     private LinearLayout layoutAddressInfo;
 
-    // Các View khác
     private TextView tvTotal;
     private RadioGroup rgPayment;
     private Button btnPlaceOrder;
@@ -50,34 +48,27 @@ public class CheckoutActivity extends AppCompatActivity {
     private ApiService apiService;
     private List<CartItem> cartItems;
 
-    // Biến lưu địa chỉ đang được chọn để đẩy lên Server
     private UserAddress selectedAddress = null;
     private boolean isBuyNow;
 
-    // TRÌNH LẮNG NGHE 1: Đợi kết quả chọn địa chỉ trả về từ trang MyAddressesActivity
     private final ActivityResultLauncher<Intent> addressPickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     UserAddress chosenAddress = (UserAddress) result.getData().getSerializableExtra("SELECTED_ADDRESS");
                     if (chosenAddress != null) {
-                        updateAddressUI(chosenAddress); // Cập nhật lại giao diện ngay lập tức
+                        updateAddressUI(chosenAddress);
                     }
                 }
             }
     );
 
-    // ==========================================
-    // [MỚI] TRÌNH LẮNG NGHE 2: Đợi kết quả từ cổng thanh toán VNPAY
-    // ==========================================
     private final ActivityResultLauncher<Intent> vnpayLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK) {
-                    // Nếu VNPAY trả về OK -> Bắt đầu đẩy đơn hàng lên Database (Đã trả tiền)
                     submitOrderToServer("VNPAY");
                 } else {
-                    // Khách bấm nút Hủy hoặc tắt ngang trang web
                     Toast.makeText(this, "Bạn đã hủy thanh toán hoặc giao dịch bị lỗi.", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -88,9 +79,6 @@ public class CheckoutActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checkout);
 
-        // ==========================================
-        // 1. ÁNH XẠ TOÀN BỘ VIEW (Đã xóa ivBack cũ)
-        // ==========================================
         tvReceiverNamePhone = findViewById(R.id.tvReceiverNamePhone);
         tvFullAddress = findViewById(R.id.tvFullAddress);
         tvNoAddress = findViewById(R.id.tvNoAddress);
@@ -102,32 +90,20 @@ public class CheckoutActivity extends AppCompatActivity {
         btnPlaceOrder = findViewById(R.id.btnPlaceOrder);
         rvSummary = findViewById(R.id.rvOrderSummary);
 
-        // Khởi tạo API
         apiService = RetrofitClient.getClient().create(ApiService.class);
 
-        // ==========================================
-        // ÁNH XẠ VÀ CÀI ĐẶT HEADER DÙNG CHUNG
-        // ==========================================
         View headerView = findViewById(R.id.headerCheckout);
         if (headerView != null) {
-            // 1. Đặt tiêu đề
             TextView tvTitle = headerView.findViewById(R.id.tvHeaderTitle);
-            if (tvTitle != null) {
-                tvTitle.setText("Thanh toán");
-            }
+            if (tvTitle != null) tvTitle.setText("Thanh toán");
 
-            // 2. Xử lý nút Back
             ImageView btnBack = headerView.findViewById(R.id.btnBack);
-            if (btnBack != null) {
-                btnBack.setOnClickListener(v -> finish());
-            }
+            if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
-            // 3. Xử lý nút Home
             ImageView btnHome = headerView.findViewById(R.id.btnHome);
             if (btnHome != null) {
                 btnHome.setOnClickListener(v -> {
                     Intent intent = new Intent(CheckoutActivity.this, MainActivity.class);
-                    // Dọn dẹp RAM, quay thẳng về màn hình chính
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
@@ -135,13 +111,9 @@ public class CheckoutActivity extends AppCompatActivity {
             }
         }
 
-        // ==========================================
-        // 2. NẠP DỮ LIỆU ĐƠN HÀNG (SẢN PHẨM & TỰ TÍNH LẠI TIỀN)
-        // ==========================================
         isBuyNow = getIntent().getBooleanExtra("IS_BUY_NOW", false);
 
         if (isBuyNow) {
-            // NẾU LÀ MUA NGAY: Tạo một giỏ hàng ảo chỉ chứa đúng 1 sản phẩm
             cartItems = new ArrayList<>();
             com.example.arfurnitureshop.models.Product p = new com.example.arfurnitureshop.models.Product();
             p.setId(getIntent().getIntExtra("BUY_NOW_ID", 0));
@@ -156,29 +128,23 @@ public class CheckoutActivity extends AppCompatActivity {
 
             cartItems.add(new CartItem(p, qty, size));
         } else {
-            // NẾU TỪ GIỎ HÀNG: Lấy dữ liệu từ SQLite
             cartItems = CartManager.getInstance(this).getItems();
         }
 
-        totalAmount = 0;
-        for (CartItem item : cartItems) {
-            double finalUnitPrice = item.getProduct().getPrice();
-            if (item.getProduct().getDiscount() > 0) {
-                finalUnitPrice = finalUnitPrice - (finalUnitPrice * item.getProduct().getDiscount() / 100.0);
-            }
-            totalAmount += (finalUnitPrice * item.getQuantity());
-        }
-
-        DecimalFormat df = new DecimalFormat("#,###");
-        tvTotal.setText("₫ " + df.format(totalAmount) + " VND");
+        // ==========================================
+        // SỬA Ở ĐÂY: Gọi hàm updateTotalPrice và truyền nó vào Adapter
+        // ==========================================
+        updateTotalPrice();
 
         rvSummary.setLayoutManager(new LinearLayoutManager(this));
-        CartAdapter summaryAdapter = new CartAdapter(cartItems, null);
+
+        // Thay chữ 'null' bằng một Runnable chạy hàm tính lại tiền
+        CartAdapter summaryAdapter = new CartAdapter(cartItems, () -> {
+            updateTotalPrice();
+        });
         rvSummary.setAdapter(summaryAdapter);
 
-        // ==========================================
-        // 3. TỰ ĐỘNG LẤY ĐỊA CHỈ & XỬ LÝ NÚT THAY ĐỔI
-        // ==========================================
+
         loadUserAddresses();
 
         btnChangeAddress.setOnClickListener(v -> {
@@ -187,9 +153,6 @@ public class CheckoutActivity extends AppCompatActivity {
             addressPickerLauncher.launch(intent);
         });
 
-        // ==========================================
-        // 4. XỬ LÝ NÚT ĐẶT HÀNG (PLACE ORDER) - LUỒNG VNPAY
-        // ==========================================
         btnPlaceOrder.setOnClickListener(v -> {
 
             if (selectedAddress == null) {
@@ -201,7 +164,6 @@ public class CheckoutActivity extends AppCompatActivity {
             String paymentMethod = (checkedId == R.id.rbMock) ? "VNPAY" : "COD";
 
             if (paymentMethod.equals("VNPAY")) {
-                // NẾU CHỌN THẺ -> GỌI API LẤY LINK VNPAY RỒI MỞ TRANG WEB
                 android.app.ProgressDialog pd = new android.app.ProgressDialog(this);
                 pd.setMessage("Đang kết nối cổng thanh toán VNPAY...");
                 pd.show();
@@ -212,10 +174,10 @@ public class CheckoutActivity extends AppCompatActivity {
                         pd.dismiss();
                         try {
                             if (response.isSuccessful() && response.body() != null) {
-                                String url = response.body().string(); // Lấy link VNPAY
+                                String url = response.body().string();
                                 Intent intent = new Intent(CheckoutActivity.this, PaymentWebViewActivity.class);
                                 intent.putExtra("VNPAY_URL", url);
-                                vnpayLauncher.launch(intent); // Mở Webview chờ khách trả tiền
+                                vnpayLauncher.launch(intent);
                             } else {
                                 Toast.makeText(CheckoutActivity.this, "Lỗi tạo link thanh toán", Toast.LENGTH_SHORT).show();
                             }
@@ -231,15 +193,28 @@ public class CheckoutActivity extends AppCompatActivity {
                     }
                 });
             } else {
-                // NẾU LÀ COD -> ĐẨY ĐƠN HÀNG LÊN SERVER LUÔN (Không cần mở web)
                 submitOrderToServer("COD");
             }
         });
     }
 
     // ==========================================
-    // [MỚI] HÀM TẠO ĐƠN HÀNG VÀ ĐẨY LÊN SQL SERVER (Dùng chung cho cả COD và VNPAY)
+    // [MỚI] HÀM TÍNH TỔNG TIỀN VÀ HIỂN THỊ LÊN MÀN HÌNH
     // ==========================================
+    private void updateTotalPrice() {
+        totalAmount = 0;
+        for (CartItem item : cartItems) {
+            double finalUnitPrice = item.getProduct().getPrice();
+            if (item.getProduct().getDiscount() > 0) {
+                finalUnitPrice = finalUnitPrice - (finalUnitPrice * item.getProduct().getDiscount() / 100.0);
+            }
+            totalAmount += (finalUnitPrice * item.getQuantity());
+        }
+
+        DecimalFormat df = new DecimalFormat("#,###");
+        tvTotal.setText("₫ " + df.format(totalAmount) + " VND");
+    }
+
     private void submitOrderToServer(String paymentMethod) {
         android.app.ProgressDialog pd = new android.app.ProgressDialog(this);
         pd.setMessage("Đang xử lý đơn hàng...");
@@ -282,7 +257,6 @@ public class CheckoutActivity extends AppCompatActivity {
                     if (!isBuyNow) {
                         CartManager.getInstance(CheckoutActivity.this).clear();
                     }
-                    // Cập nhật lại số lượng giỏ hàng ở thanh Bottom Nav
                     com.example.arfurnitureshop.utils.BadgeUtils.fetchAndCacheBadges(CheckoutActivity.this);
 
                     Intent intent = new Intent(CheckoutActivity.this, MainActivity.class);
@@ -302,9 +276,6 @@ public class CheckoutActivity extends AppCompatActivity {
         });
     }
 
-    // ==========================================
-    // CÁC HÀM HỖ TRỢ XỬ LÝ ĐỊA CHỈ
-    // ==========================================
     private void loadUserAddresses() {
         int userId = getSharedPreferences("UserPrefs", MODE_PRIVATE).getInt("USER_ID", -1);
         if (userId == -1) return;

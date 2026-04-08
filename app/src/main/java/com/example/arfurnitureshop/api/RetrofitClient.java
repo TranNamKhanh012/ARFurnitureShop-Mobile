@@ -8,9 +8,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
     // 1. THAY LINK THẬT CỦA BẠN VÀO ĐÂY (Link SmarterASP)
-    //private static final String BASE_URL = "http://trannamkhanh-001-site1.jtempurl.com/";
+    private static final String BASE_URL = "http://trannamkhanh-001-site1.jtempurl.com/";
 
-    private static final String BASE_URL = "http://192.168.11.133:5103/";
+    //private static final String BASE_URL = "http://192.168.11.133:5103/";
     private static Retrofit retrofit = null;
 
     public static Retrofit getClient() {

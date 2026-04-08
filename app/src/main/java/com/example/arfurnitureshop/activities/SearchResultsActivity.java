@@ -43,20 +43,28 @@ public class SearchResultsActivity extends AppCompatActivity {
     private Double currentMaxPrice = null;
     private String currentSortBy = "date_desc"; // Mặc định: Mới nhất
 
-    // Dữ liệu cho Dropdown
-    private final String[] sortOptionsArray = {"Relevance (Rating)", "Price: Low to High", "Price: High to Low", "Newest", "Oldest"};
+    // ==========================================
+    // ĐÃ SỬA: Dữ liệu Dropdown tiếng Việt
+    // ==========================================
+    private final String[] sortOptionsArray = {
+            "Mới nhất",
+            "Giá: Thấp đến Cao",
+            "Giá: Cao đến Thấp",
+            "Cũ nhất"
+    };
+
+    // ĐÃ SỬA: Chìa khóa map phải khớp y hệt mảng tiếng Việt ở trên
     private final Map<String, String> sortByValueMap = new HashMap<String, String>() {{
-        put("Relevance (Rating)", "rating_desc");
-        put("Price: Low to High", "price_asc");
-        put("Price: High to Low", "price_desc");
-        put("Newest", "date_desc");
-        put("Oldest", "date_asc");
+        put("Mới nhất", "rating_desc");
+        put("Giá: Thấp đến Cao", "price_asc");
+        put("Giá: Cao đến Thấp", "price_desc");
+        put("Cũ nhất", "date_asc");
     }};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_results); // File giao diện XML hôm trước
+        setContentView(R.layout.activity_search_results);
 
         rvFilteredProducts = findViewById(R.id.rvFilteredProducts);
         tvResultsCount = findViewById(R.id.tvResultsCount);
@@ -70,7 +78,9 @@ public class SearchResultsActivity extends AppCompatActivity {
         // Nhận từ khóa từ Trang chủ truyền sang
         currentKeyword = getIntent().getStringExtra("SEARCH_KEYWORD");
         if (currentKeyword == null) currentKeyword = "";
-        tvResultsCount.setText("Search results for: \"" + currentKeyword + "\"");
+
+        // ĐÃ SỬA: Câu thông báo lúc mới vào trang
+        tvResultsCount.setText("Kết quả tìm kiếm cho: \"" + currentKeyword + "\"");
 
         // Cài đặt Dropdown Sắp xếp
         ArrayAdapter<String> adapterSortBy = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortOptionsArray);
@@ -106,8 +116,8 @@ public class SearchResultsActivity extends AppCompatActivity {
                         if (response.isSuccessful() && response.body() != null) {
                             List<Product> products = response.body();
 
-                            // Cập nhật dòng chữ số lượng kết quả
-                            tvResultsCount.setText("Found " + products.size() + " results for: \"" + currentKeyword + "\"");
+                            // ĐÃ SỬA: Câu thông báo khi có kết quả trả về
+                            tvResultsCount.setText("Tìm thấy " + products.size() + " kết quả cho: \"" + currentKeyword + "\"");
 
                             // Đổ dữ liệu vào Adapter
                             productAdapter = new ProductAdapter(products);
@@ -133,21 +143,22 @@ public class SearchResultsActivity extends AppCompatActivity {
         layoutDialog.setPadding(48, 48, 48, 12);
 
         EditText edtMinPrice = new EditText(this);
-        edtMinPrice.setHint("Min Price (VD: 1000000)");
+        edtMinPrice.setHint("Giá tối thiểu (VD: 1000000)");
         edtMinPrice.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
         if (currentMinPrice != null) edtMinPrice.setText(String.valueOf(currentMinPrice.intValue()));
         layoutDialog.addView(edtMinPrice);
 
         EditText edtMaxPrice = new EditText(this);
-        edtMaxPrice.setHint("Max Price (VD: 5000000)");
+        edtMaxPrice.setHint("Giá tối đa (VD: 5000000)");
         edtMaxPrice.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
         if (currentMaxPrice != null) edtMaxPrice.setText(String.valueOf(currentMaxPrice.intValue()));
         layoutDialog.addView(edtMaxPrice);
 
+        // ĐÃ SỬA: Tiêu đề và nút bấm tiếng Việt
         new AlertDialog.Builder(this)
-                .setTitle("Filter by Price")
+                .setTitle("Lọc theo giá")
                 .setView(layoutDialog)
-                .setPositiveButton("APPLY", (dialog, which) -> {
+                .setPositiveButton("ÁP DỤNG", (dialog, which) -> {
                     String min = edtMinPrice.getText().toString().trim();
                     String max = edtMaxPrice.getText().toString().trim();
                     try {
@@ -158,7 +169,7 @@ public class SearchResultsActivity extends AppCompatActivity {
                         Toast.makeText(SearchResultsActivity.this, "Vui lòng nhập số hợp lệ!", Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setNegativeButton("CLEAR", (dialog, which) -> {
+                .setNegativeButton("XÓA LỌC", (dialog, which) -> {
                     currentMinPrice = null;
                     currentMaxPrice = null;
                     fetchFilteredSortedProducts();
