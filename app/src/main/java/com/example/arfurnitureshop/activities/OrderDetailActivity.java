@@ -27,7 +27,14 @@ public class OrderDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_detail);
 
-        ImageView ivBack = findViewById(R.id.ivBackDetail);
+        ImageView ivBack = findViewById(R.id.btnBack);
+        ivBack.setOnClickListener(v -> finish());
+
+        // (Nếu bạn muốn đổi luôn Tiêu đề trang cho đúng, hãy ánh xạ thêm tvHeaderTitle)
+        TextView tvTitle = findViewById(R.id.tvHeaderTitle);
+        if (tvTitle != null) {
+            tvTitle.setText("Chi tiết đơn hàng");
+        }
         ivBack.setOnClickListener(v -> finish());
 
         tvName = findViewById(R.id.tvInfoName);

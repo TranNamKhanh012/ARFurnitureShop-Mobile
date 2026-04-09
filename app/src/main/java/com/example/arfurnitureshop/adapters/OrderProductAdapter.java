@@ -42,17 +42,29 @@ public class OrderProductAdapter extends RecyclerView.Adapter<OrderProductAdapte
             holder.tvSize.setVisibility(View.GONE);
         }
 
-        // Load ảnh với Localhost hoặc SmarterASP (nhớ đổi IP nếu dùng máy thật)
-        String fullImageUrl = "http://10.0.2.2:5103/images/" + item.getProductImage();
+        // ========================================================
+        // ĐÃ SỬA: CHUẨN BỊ LINK VÀ CHÌA KHÓA CHO GLIDE LẤY ẢNH TRÊN MẠNG
+        // ========================================================
+        String fullImageUrl = "http://trannamkhanh-001-site1.jtempurl.com/images/" + item.getProductImage();
 
-        // Nếu dùng SmarterASP thì gắn chìa khóa như cũ:
-        // String userCam = "11300735"; String passCam = "60-dayfreetrial";
-        // String credential = okhttp3.Credentials.basic(userCam, passCam); ...
+        String userCam = "11300735";
+        String passCam = "60-dayfreetrial";
+        String credential = okhttp3.Credentials.basic(userCam, passCam);
 
+        com.bumptech.glide.load.model.GlideUrl glideUrlWithAuth = new com.bumptech.glide.load.model.GlideUrl(fullImageUrl,
+                new com.bumptech.glide.load.model.LazyHeaders.Builder()
+                        .addHeader("Authorization", credential)
+                        .build());
+
+        // TẢI ẢNH VÀO BIẾN holder.ivProduct
         Glide.with(holder.itemView.getContext())
-                .load(fullImageUrl) // Hoặc load(glideUrlWithAuth) nếu dùng cloud
+                .load(glideUrlWithAuth)
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_foreground)
                 .into(holder.ivProduct);
+        // ========================================================
     }
+
 
     @Override
     public int getItemCount() { return items.size(); }

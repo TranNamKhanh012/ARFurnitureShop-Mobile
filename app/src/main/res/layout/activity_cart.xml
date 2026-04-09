@@ -39,7 +39,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -85,6 +84,32 @@
             android:layout_below="@id/headerLayout"
             android:clipToPadding="false"
             android:paddingTop="8dp" />
+
+        <LinearLayout
+            android:id="@+id/layoutEmptyCart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/checkoutSection"
+            android:layout_below="@id/headerLayout"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/ic_cart"
+                app:tint="#CCCCCC" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chưa có sản phẩm nào trong giỏ hàng!"
+                android:textColor="#888888"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
     </RelativeLayout>
 

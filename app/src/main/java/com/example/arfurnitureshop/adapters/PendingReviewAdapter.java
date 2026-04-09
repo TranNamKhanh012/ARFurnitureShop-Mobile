@@ -44,9 +44,27 @@ public class PendingReviewAdapter extends RecyclerView.Adapter<PendingReviewAdap
         Product product = productList.get(position);
         holder.tvName.setText(product.getName());
 
-        // Load ảnh (Nhớ đổi lại IP localhost/SmarterASP của bạn cho đúng nhé)
-        String imageUrl = "http://10.0.2.2:5103/images/" + product.getImageUrl();
-        Glide.with(holder.itemView.getContext()).load(imageUrl).into(holder.ivProduct);
+        // ========================================================
+        // ĐÃ SỬA: CHUẨN BỊ LINK VÀ CHÌA KHÓA CHO GLIDE LẤY ẢNH TRÊN MẠNG
+        // ========================================================
+        String fullImageUrl = "http://trannamkhanh-001-site1.jtempurl.com/images/" + product.getImageUrl();
+
+        String userCam = "11300735";
+        String passCam = "60-dayfreetrial";
+        String credential = okhttp3.Credentials.basic(userCam, passCam);
+
+        com.bumptech.glide.load.model.GlideUrl glideUrlWithAuth = new com.bumptech.glide.load.model.GlideUrl(fullImageUrl,
+                new com.bumptech.glide.load.model.LazyHeaders.Builder()
+                        .addHeader("Authorization", credential)
+                        .build());
+
+        // TẢI ẢNH VÀO BIẾN holder.ivProduct
+        Glide.with(holder.itemView.getContext())
+                .load(glideUrlWithAuth)
+                .placeholder(R.drawable.ic_launcher_background)
+                .error(R.drawable.ic_launcher_foreground)
+                .into(holder.ivProduct);
+        // ========================================================
 
         // Sự kiện gửi đánh giá
         holder.btnSubmit.setOnClickListener(v -> {

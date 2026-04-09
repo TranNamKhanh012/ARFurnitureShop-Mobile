@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         if (tvSeeAllBestSellers != null) {
             tvSeeAllBestSellers.setOnClickListener(v -> {
                 Intent intent = new Intent(MainActivity.this, AllProductsActivity.class);
-                intent.putExtra("PAGE_TITLE", "Best Sellers");
+                intent.putExtra("PAGE_TITLE", "Sản phẩm giảm giá");
                 intent.putExtra("SHOW_ONLY_DISCOUNT", true); // Báo hiệu lọc hàng giảm giá
                 startActivity(intent);
             });
@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         if (tvSeeAllProducts != null) {
             tvSeeAllProducts.setOnClickListener(v -> {
                 Intent intent = new Intent(MainActivity.this, AllProductsActivity.class);
-                intent.putExtra("PAGE_TITLE", "All Products");
+                intent.putExtra("PAGE_TITLE", "Tất cả sản phẩm");
                 startActivity(intent);
             });
         }

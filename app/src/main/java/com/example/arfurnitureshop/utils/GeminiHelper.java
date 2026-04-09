@@ -20,7 +20,7 @@ import okhttp3.Response;
 public class GeminiHelper {
 
     // ĐIỀN API KEY CỦA BẠN VÀO GIỮA 2 DẤU NGOẶC KÉP BÊN DƯỚI
-    private static final String API_KEY = "teo them";
+    private static final String API_KEY = "xoa";
 
     // Mình đã thêm .trim() để tự động xóa các dấu cách thừa nếu bạn lỡ copy nhầm
     // Dùng lại model gemini-1.5-flash tiêu chuẩn
@@ -41,7 +41,7 @@ public class GeminiHelper {
             JSONArray partsArray = new JSONArray();
             JSONObject partsObject = new JSONObject();
 
-            String promptContext = "Bạn là trợ lý ảo AI thông minh của ứng dụng Vũ Trụ Phụ Kiện. Hãy trả lời ngắn gọn, thân thiện và hữu ích. Khách hàng hỏi: " + userMessage;
+            String promptContext = "Bạn là trợ lý ảo AI thông minh của ứng dụng Accessories. Hãy trả lời ngắn gọn, thân thiện và hữu ích. Khách hàng hỏi: " + userMessage;
 
             partsObject.put("text", promptContext);
             partsArray.put(partsObject);

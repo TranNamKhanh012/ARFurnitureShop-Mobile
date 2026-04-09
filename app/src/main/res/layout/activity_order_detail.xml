@@ -3,30 +3,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:fitsSystemWindows="true"
     android:background="#F5F5F5">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:background="#FFFFFF"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:elevation="4dp">
-        <ImageView
-            android:id="@+id/ivBackDetail"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="12dp"
-            android:src="@android:drawable/ic_menu_revert" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:text="Chi tiết đơn hàng"
-            android:textColor="#333333"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+    <include
+        android:id="@+id/headerLayout"
+        layout="@layout/layout_header_title" />
 
     <ScrollView
         android:layout_width="match_parent"

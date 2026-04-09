@@ -118,7 +118,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:text="Order Summary"
+                        android:text="Tóm tắt đơn hàng"
                         android:textColor="#333333"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -148,7 +148,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="12dp"
-                        android:text="Payment Method"
+                        android:text="Phương thức thanh toán"
                         android:textColor="#333333"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -162,14 +162,14 @@
                             android:id="@+id/rbCOD"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Cash on Delivery"
+                            android:text="Thanh toán khi nhận hàng"
                             android:checked="true"/>
 
                         <RadioButton
                             android:id="@+id/rbMock"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Credit/Debit Card (Mock)"/>
+                            android:text="Thanh toán qua ngân hàng"/>
                     </RadioGroup>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -195,7 +195,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Total Price"
+                android:text="Tổng tiền"
                 android:textColor="#666666"
                 android:textSize="12sp" />
 
@@ -214,7 +214,7 @@
             android:layout_width="150dp"
             android:layout_height="50dp"
             android:backgroundTint="#4285F4"
-            android:text="Place Order"
+            android:text="Đặt hàng"
             android:textAllCaps="false"
             android:textColor="#FFFFFF"
             android:textSize="16sp"

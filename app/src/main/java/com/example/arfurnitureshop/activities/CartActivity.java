@@ -2,8 +2,10 @@ package com.example.arfurnitureshop.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,10 +23,11 @@ import com.google.android.material.navigation.NavigationView;
 import java.text.DecimalFormat;
 
 public class CartActivity extends AppCompatActivity {
-    // PHẢI KHAI BÁO BIẾN Ở ĐÂY ĐỂ HẾT ĐỎ
+
     private RecyclerView rv;
     private TextView tvTotal;
     private Button btnContinue;
+    private LinearLayout checkoutSection, layoutEmptyCart; // ĐÃ THÊM KHAI BÁO BIẾN
     private double currentTotal = 0;
 
     @Override
@@ -32,20 +35,19 @@ public class CartActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
 
-        // Ánh xạ đúng ID từ file XML bạn vừa gửi
         rv = findViewById(R.id.rvCartItems);
         tvTotal = findViewById(R.id.tvTotalAmount);
-        btnContinue = findViewById(R.id.btnContinue); // Khớp với android:id="@+id/btnContinue"
+        btnContinue = findViewById(R.id.btnContinue);
+        checkoutSection = findViewById(R.id.checkoutSection); // ÁNH XẠ
+        layoutEmptyCart = findViewById(R.id.layoutEmptyCart); // ÁNH XẠ
 
         rv.setLayoutManager(new LinearLayoutManager(this));
         rv.setAdapter(new CartAdapter(CartManager.getInstance(this).getItems(), this::updateTotal));
 
         updateTotal();
 
-        // XỬ LÝ SỰ KIỆN NÚT CONTINUE (THANH TOÁN)
         btnContinue.setOnClickListener(v -> {
             if (currentTotal > 0) {
-                // Chuyển sang trang Checkout xác nhận
                 Intent intent = new Intent(CartActivity.this, CheckoutActivity.class);
                 intent.putExtra("TOTAL_PRICE", currentTotal);
                 startActivity(intent);
@@ -54,42 +56,23 @@ public class CartActivity extends AppCompatActivity {
             }
         });
 
-        // ==========================================
-        // GỌI TRỢ LÝ MENU RA LÀM VIỆC (CHỈ 3 DÒNG CODE)
-        // ==========================================
         DrawerLayout drawerLayout = findViewById(R.id.drawerLayout);
         NavigationView navigationView = findViewById(R.id.navigationView);
         ImageView ivMenu = findViewById(R.id.ivMenu);
 
-        // Giao toàn bộ việc đóng/mở menu cho MenuHelper xử lý
         MenuHelper.setupMenu(this, drawerLayout, ivMenu, navigationView);
-        // ==========================================
-        // XỬ LÝ THANH MENU FOOTER (BOTTOM NAVIGATION)
-        // ==========================================
-        // ==========================================
-        // THANH ĐIỀU HƯỚNG DƯỚI CÙNG (CHUYỂN TRANG SIÊU MƯỢT, KHÔNG CHỚP NHÁY)
-        // ==========================================
-        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
 
-        // [QUAN TRỌNG] TÙY CHỈNH CHO TỪNG TRANG:
-        // Ở trang nào thì bạn đổi ID thành icon của trang đó nhé!
-        // (Ví dụ: Trang chủ -> R.id.nav_home | Giỏ hàng -> R.id.nav_cart | Tài khoản -> R.id.nav_account)
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
         bottomNav.setSelectedItemId(R.id.nav_cart);
 
         bottomNav.setOnItemSelectedListener(item -> {
             int itemId = item.getItemId();
-
-            // Nếu người dùng bấm lại vào chính cái tab đang xem -> Đứng im, không load lại trang
-            if (itemId == bottomNav.getSelectedItemId()) {
-                return true;
-            }
+            if (itemId == bottomNav.getSelectedItemId()) { return true; }
 
             Intent intent = null;
-
             if (itemId == R.id.nav_home) {
                 intent = new Intent(this, MainActivity.class);
             } else if (itemId == R.id.nav_category) {
-                // Nhớ đổi tên file ở đây nếu trang danh mục của bạn tên là CategoryProductsActivity nhé
                 intent = new Intent(this, AllCategoriesActivity.class);
             } else if (itemId == R.id.nav_cart) {
                 intent = new Intent(this, CartActivity.class);
@@ -100,42 +83,44 @@ public class CartActivity extends AppCompatActivity {
             }
 
             if (intent != null) {
-                // 1. Tắt hiệu ứng tạo màn hình mới
                 intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
                 startActivity(intent);
-
-                // 2. Tắt triệt để hiệu ứng trượt/nhảy của Android
                 overridePendingTransition(0, 0);
-
-                // 3. Đóng trang cũ để giải phóng RAM cho điện thoại
                 finish();
             }
             return true;
         });
-        // GỌI TRỢ LÝ TÌM KIẾM RA LÀM VIỆC
+
         com.example.arfurnitureshop.utils.SearchHelper.setupSearch(this);
         com.example.arfurnitureshop.utils.NotificationHelper.setupNotificationBell(this);
     }
+
     @Override
     protected void onResume() {
         super.onResume();
-
-        // ... (Các code cũ của bạn nếu có) ...
-
-        // TỰ ĐỘNG ĐỒNG BỘ CHẤM ĐỎ GIỎ HÀNG VÀ YÊU THÍCH
         com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottomNavigationView);
         com.example.arfurnitureshop.utils.BadgeUtils.loadCachedBadges(this, bottomNav);
         com.example.arfurnitureshop.utils.NotificationHelper.checkPendingReviews(this);
     }
 
-    // PHẢI CÓ HÀM NÀY ĐỂ HẾT LỖI "this::updateTotal"
     private void updateTotal() {
         DecimalFormat df = new DecimalFormat("#,###");
         double total = CartManager.getInstance(this).getTotal();
 
-        // [QUAN TRỌNG]: Bắt buộc phải cập nhật biến này thì nút Thanh toán mới chạy
         currentTotal = total;
-
         tvTotal.setText("₫ " + df.format(total) + " VND");
+
+        // ========================================================
+        // ĐÃ SỬA: ẨN/HIỆN GIAO DIỆN VÀ PHẦN TÍNH TIỀN THEO TRẠNG THÁI
+        // ========================================================
+        if (CartManager.getInstance(this).getItems().isEmpty()) {
+            rv.setVisibility(View.GONE);
+            layoutEmptyCart.setVisibility(View.VISIBLE); // Hiện câu báo trống
+            checkoutSection.setVisibility(View.GONE);    // Ẩn khung tổng tiền
+        } else {
+            rv.setVisibility(View.VISIBLE);
+            layoutEmptyCart.setVisibility(View.GONE);    // Ẩn câu báo trống
+            checkoutSection.setVisibility(View.VISIBLE); // Hiện lại khung tổng tiền
+        }
     }
 }
