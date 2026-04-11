@@ -63,7 +63,6 @@ public class ProductDetailActivity extends AppCompatActivity {
         Button btnAddToCart = findViewById(R.id.btnAddToCart);
         Button btnBuyNow = findViewById(R.id.btnBuyNow);
         FloatingActionButton fabWishlist = findViewById(R.id.fabWishlist);
-        FloatingActionButton fabArView = findViewById(R.id.fabArView);
 
         TextView btnMinusDetail = findViewById(R.id.btnMinusDetail);
         TextView btnPlusDetail = findViewById(R.id.btnPlusDetail);
@@ -333,10 +332,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             }
         });
 
-        fabArView.setOnClickListener(v -> {
-            Intent intent = new Intent(ProductDetailActivity.this, FaceArActivity.class);
-            startActivity(intent);
-        });
+
 
     }
 

@@ -1,6 +1,7 @@
 package com.example.arfurnitureshop.activities;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -32,14 +33,11 @@ public class AboutActivity extends AppCompatActivity {
             if (btnBack != null) {
                 btnBack.setOnClickListener(v -> finish());
             }
-            // =====================================
-            // THÊM SỰ KIỆN NÚT HOME VÀO ĐÂY
-            // =====================================
+
             ImageView btnHome = headerView.findViewById(R.id.btnHome);
             if (btnHome != null) {
                 btnHome.setOnClickListener(v -> {
-                    Intent intent = new Intent(this, MainActivity.class); // Về trang chủ
-                    // Xóa toàn bộ lịch sử các trang trước đó để tránh đầy RAM
+                    Intent intent = new Intent(this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
@@ -48,7 +46,20 @@ public class AboutActivity extends AppCompatActivity {
         }
 
         // ==========================================
-        // 2. XỬ LÝ HIỂN THỊ BẢN ĐỒ BẰNG WEBVIEW
+        // 2. BẤM VÀO ĐỊA CHỈ ĐỂ MỞ APP GOOGLE MAPS
+        // ==========================================
+        TextView tvLocationAddress = findViewById(R.id.tvLocationAddress);
+        if (tvLocationAddress != null) {
+            tvLocationAddress.setOnClickListener(v -> {
+                // Link tìm kiếm Hà Nội, Việt Nam trên Google Maps
+                String mapUrl = "https://www.google.com/maps/search/?api=1&query=123+Tân+Mai,Hoàng+Mai,Hà+Nội,+Việt+Nam";
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mapUrl));
+                startActivity(intent);
+            });
+        }
+
+        // ==========================================
+        // 3. XỬ LÝ HIỂN THỊ BẢN ĐỒ BẰNG WEBVIEW (ĐÃ SỬA LINK)
         // ==========================================
         WebView webViewMap = findViewById(R.id.webViewMap);
         if (webViewMap != null) {
@@ -56,7 +67,8 @@ public class AboutActivity extends AppCompatActivity {
             webSettings.setJavaScriptEnabled(true);
             webViewMap.setWebViewClient(new WebViewClient());
 
-            String iframeHtml = "<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3724.096814183571!2d105.77972177609204!3d21.028811880620857!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ab86cece9ac1%3A0xa9bc04e04602dd85!2zRlBUIFBvbHl0ZWNobmljIEjDoCBO4buZaQ!5e0!3m2!1svi!2s!4v1710928929747!5m2!1svi!2s\" width=\"100%\" height=\"100%\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade\"></iframe>";
+            // ĐÃ SỬA: Dùng iframe chuẩn của Google Maps (Tọa độ Hà Nội)
+            String iframeHtml = "<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.219189280141!2d105.8457294109003!3d20.983849080573613!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3135ac41dcde2611%3A0x9b57bf4c78ab1b30!2zMTIzIFAuIFTDom4gTWFpLCBUxrDGoW5nIE1haSwgSMOgIE7hu5lpLCBWaeG7h3QgTmFt!5e0!3m2!1svi!2s!4v1775808368935!5m2!1svi!2s\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade\"></iframe>";
             String customHtml = "<html><body style=\"margin: 0; padding: 0;\">" + iframeHtml + "</body></html>";
 
             webViewMap.loadData(customHtml, "text/html", "utf-8");

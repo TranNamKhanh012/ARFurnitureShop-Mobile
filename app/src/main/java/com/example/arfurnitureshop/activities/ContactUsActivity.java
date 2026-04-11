@@ -59,7 +59,7 @@ public class ContactUsActivity extends AppCompatActivity {
         // 3. Xử lý Gọi điện Hotline
         if (cardHotline != null) {
             cardHotline.setOnClickListener(v -> {
-                String phone = "0123456789"; // Đổi thành số điện thoại thật của bạn
+                String phone = "0941655919"; // Đổi thành số điện thoại thật của bạn
                 Intent intent = new Intent(Intent.ACTION_DIAL);
                 intent.setData(Uri.parse("tel:" + phone));
                 startActivity(intent);
@@ -69,7 +69,7 @@ public class ContactUsActivity extends AppCompatActivity {
         // 4. Xử lý Nhắn tin Zalo
         if (cardZalo != null) {
             cardZalo.setOnClickListener(v -> {
-                String url = "https://zalo.me/0123456789"; // Đổi thành link zalo thật của bạn
+                String url = "https://zalo.me/0941655919"; // Đổi thành link zalo thật của bạn
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse(url));
                 startActivity(intent);

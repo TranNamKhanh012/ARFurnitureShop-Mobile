@@ -23,7 +23,7 @@
                 android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:text="Mã ĐH: #123"
+                android:text="Mã Đơn Hàng: #123"
                 android:textStyle="bold"
                 android:textColor="#333"
                 android:textSize="16sp"/>

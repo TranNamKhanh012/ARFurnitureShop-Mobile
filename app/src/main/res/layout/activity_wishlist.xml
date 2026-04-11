@@ -18,16 +18,31 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true" />
 
-        <TextView
-            android:id="@+id/tvEmptyWishlist"
+        <LinearLayout
+            android:id="@+id/layoutEmptyWishlist"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/bottomNavigationView"
             android:layout_below="@+id/headerLayout"
             android:gravity="center"
-            android:text="Chưa có sản phẩm yêu thích nào"
-            android:textSize="16sp"
-            android:visibility="gone" />
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_marginBottom="16dp"
+                android:src="@drawable/ic_heart_empty"
+                app:tint="#CCCCCC" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chưa có sản phẩm yêu thích nào!"
+                android:textColor="#888888"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvWishlist"

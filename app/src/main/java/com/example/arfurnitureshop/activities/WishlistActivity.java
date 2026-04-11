@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,7 +22,7 @@ import com.google.android.material.navigation.NavigationView;
 public class WishlistActivity extends AppCompatActivity {
 
     private RecyclerView rvWishlist;
-    private TextView tvEmptyWishlist;
+    private LinearLayout layoutEmptyWishlist;
     private ProductAdapter productAdapter;
 
     @Override
@@ -31,7 +32,7 @@ public class WishlistActivity extends AppCompatActivity {
 
         // 1. Ánh xạ View
         rvWishlist = findViewById(R.id.rvWishlist);
-        tvEmptyWishlist = findViewById(R.id.tvEmptyWishlist);
+        layoutEmptyWishlist = findViewById(R.id.layoutEmptyWishlist);
 
         // 2. Thiết lập RecyclerView hiển thị 2 cột
         rvWishlist.setLayoutManager(new GridLayoutManager(this, 2));
@@ -109,10 +110,10 @@ public class WishlistActivity extends AppCompatActivity {
     private void checkEmptyList() {
         if (WishlistManager.wishlistProducts.isEmpty()) {
             rvWishlist.setVisibility(View.GONE);
-            tvEmptyWishlist.setVisibility(View.VISIBLE);
+            layoutEmptyWishlist.setVisibility(View.VISIBLE);
         } else {
             rvWishlist.setVisibility(View.VISIBLE);
-            tvEmptyWishlist.setVisibility(View.GONE);
+            layoutEmptyWishlist.setVisibility(View.GONE);
         }
     }
 }

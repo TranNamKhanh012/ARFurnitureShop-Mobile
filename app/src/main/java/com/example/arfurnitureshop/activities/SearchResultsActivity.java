@@ -1,6 +1,8 @@
 package com.example.arfurnitureshop.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -37,15 +39,11 @@ public class SearchResultsActivity extends AppCompatActivity {
     private Spinner spinnerSortBy;
     private LinearLayout llFilter;
 
-    // Biến lưu trạng thái lọc
     private String currentKeyword = "";
     private Double currentMinPrice = null;
     private Double currentMaxPrice = null;
-    private String currentSortBy = "date_desc"; // Mặc định: Mới nhất
+    private String currentSortBy = "date_desc";
 
-    // ==========================================
-    // ĐÃ SỬA: Dữ liệu Dropdown tiếng Việt
-    // ==========================================
     private final String[] sortOptionsArray = {
             "Mới nhất",
             "Giá: Thấp đến Cao",
@@ -53,7 +51,6 @@ public class SearchResultsActivity extends AppCompatActivity {
             "Cũ nhất"
     };
 
-    // ĐÃ SỬA: Chìa khóa map phải khớp y hệt mảng tiếng Việt ở trên
     private final Map<String, String> sortByValueMap = new HashMap<String, String>() {{
         put("Mới nhất", "rating_desc");
         put("Giá: Thấp đến Cao", "price_asc");
@@ -70,17 +67,43 @@ public class SearchResultsActivity extends AppCompatActivity {
         tvResultsCount = findViewById(R.id.tvResultsCount);
         spinnerSortBy = findViewById(R.id.spinnerSortBy);
         llFilter = findViewById(R.id.llFilter);
-        ImageView ivBack = findViewById(R.id.ivBack);
 
         // Hiển thị dạng lưới 2 cột
         rvFilteredProducts.setLayoutManager(new GridLayoutManager(this, 2));
 
-        // Nhận từ khóa từ Trang chủ truyền sang
+        // Nhận từ khóa
         currentKeyword = getIntent().getStringExtra("SEARCH_KEYWORD");
         if (currentKeyword == null) currentKeyword = "";
 
-        // ĐÃ SỬA: Câu thông báo lúc mới vào trang
         tvResultsCount.setText("Kết quả tìm kiếm cho: \"" + currentKeyword + "\"");
+
+        // ==========================================
+        // ĐÃ ĐỒNG BỘ: ÁNH XẠ HEADER DÙNG CHUNG
+        // ==========================================
+        View headerView = findViewById(R.id.headerSearch);
+        if (headerView != null) {
+            TextView tvTitle = headerView.findViewById(R.id.tvHeaderTitle);
+            if (tvTitle != null) {
+                tvTitle.setText("Kết quả tìm kiếm"); // Đổi tiêu đề tiếng Việt
+            }
+
+            ImageView btnBack = headerView.findViewById(R.id.btnBack);
+            if (btnBack != null) {
+                btnBack.setOnClickListener(v -> finish());
+            }
+
+            // Gắn sự kiện về trang chủ nếu header có nút Home
+            ImageView btnHome = headerView.findViewById(R.id.btnHome);
+            if (btnHome != null) {
+                btnHome.setOnClickListener(v -> {
+                    Intent intent = new Intent(this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                });
+            }
+        }
+        // ==========================================
 
         // Cài đặt Dropdown Sắp xếp
         ArrayAdapter<String> adapterSortBy = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, sortOptionsArray);
@@ -91,7 +114,7 @@ public class SearchResultsActivity extends AppCompatActivity {
             @Override
             public void onItemSelected(android.widget.AdapterView<?> parent, android.view.View view, int position, long id) {
                 currentSortBy = sortByValueMap.get(sortOptionsArray[position]);
-                fetchFilteredSortedProducts(); // Gọi API ngay khi đổi kiểu sắp xếp
+                fetchFilteredSortedProducts();
             }
             @Override
             public void onNothingSelected(android.widget.AdapterView<?> parent) {}
@@ -100,14 +123,9 @@ public class SearchResultsActivity extends AppCompatActivity {
         // Bắt sự kiện mở hộp thoại Lọc Giá
         llFilter.setOnClickListener(v -> showPriceFilterDialog());
 
-        ivBack.setOnClickListener(v -> finish());
-
         apiService = RetrofitClient.getClient().create(ApiService.class);
     }
 
-    // ==========================================
-    // GỌI API ĐỂ LẤY KẾT QUẢ
-    // ==========================================
     private void fetchFilteredSortedProducts() {
         apiService.getFilteredSortedProducts(currentKeyword, currentMinPrice, currentMaxPrice, currentSortBy)
                 .enqueue(new Callback<List<Product>>() {
@@ -116,10 +134,8 @@ public class SearchResultsActivity extends AppCompatActivity {
                         if (response.isSuccessful() && response.body() != null) {
                             List<Product> products = response.body();
 
-                            // ĐÃ SỬA: Câu thông báo khi có kết quả trả về
                             tvResultsCount.setText("Tìm thấy " + products.size() + " kết quả cho: \"" + currentKeyword + "\"");
 
-                            // Đổ dữ liệu vào Adapter
                             productAdapter = new ProductAdapter(products);
                             rvFilteredProducts.setAdapter(productAdapter);
                         } else {
@@ -134,9 +150,6 @@ public class SearchResultsActivity extends AppCompatActivity {
                 });
     }
 
-    // ==========================================
-    // HỘP THOẠI NHẬP KHOẢNG GIÁ (DIALOG)
-    // ==========================================
     private void showPriceFilterDialog() {
         LinearLayout layoutDialog = new LinearLayout(this);
         layoutDialog.setOrientation(LinearLayout.VERTICAL);
@@ -154,7 +167,6 @@ public class SearchResultsActivity extends AppCompatActivity {
         if (currentMaxPrice != null) edtMaxPrice.setText(String.valueOf(currentMaxPrice.intValue()));
         layoutDialog.addView(edtMaxPrice);
 
-        // ĐÃ SỬA: Tiêu đề và nút bấm tiếng Việt
         new AlertDialog.Builder(this)
                 .setTitle("Lọc theo giá")
                 .setView(layoutDialog)
@@ -164,7 +176,7 @@ public class SearchResultsActivity extends AppCompatActivity {
                     try {
                         currentMinPrice = min.isEmpty() ? null : Double.parseDouble(min);
                         currentMaxPrice = max.isEmpty() ? null : Double.parseDouble(max);
-                        fetchFilteredSortedProducts(); // Lọc xong thì gọi lại API
+                        fetchFilteredSortedProducts();
                     } catch (NumberFormatException e) {
                         Toast.makeText(SearchResultsActivity.this, "Vui lòng nhập số hợp lệ!", Toast.LENGTH_SHORT).show();
                     }

@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
         android:gravity="center"
-        android:text="Sign In"
+        android:text="Đăng nhập"
         android:textColor="#1A1C29"
         android:textSize="32sp"
         android:textStyle="bold" />
@@ -34,7 +34,7 @@
             android:id="@+id/etLoginUsername"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Username or Phone"
+            android:hint="Tên đăng nhập"
             android:paddingHorizontal="20dp"
             android:paddingVertical="16dp"
             android:textColor="#333333" />
@@ -57,7 +57,7 @@
             android:id="@+id/etLoginPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Password"
+            android:hint="Mật khẩu"
             android:inputType="textPassword"
             android:paddingHorizontal="20dp"
             android:paddingVertical="16dp"
@@ -71,7 +71,7 @@
         android:layout_gravity="end"
         android:layout_marginBottom="32dp"
         android:layout_marginEnd="8dp"
-        android:text="Forgot password?"
+        android:text="Quên mật khẩu?"
         android:textColor="#888888"
         android:textSize="14sp" />
 
@@ -81,7 +81,7 @@
         android:layout_height="56dp"
         android:layout_marginBottom="24dp"
         android:backgroundTint="#1E88E5"
-        android:text="SIGN IN"
+        android:text="ĐĂNG NHẬP"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:textStyle="bold"
@@ -96,7 +96,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Don't have an account? "
+            android:text="Bạn chưa có tài khoản? "
             android:textColor="#555555"
             android:textSize="14sp" />
 
@@ -104,7 +104,7 @@
             android:id="@+id/tvGoToRegister"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Sign Up"
+            android:text="Đăng ký"
             android:textColor="#1E88E5"
             android:textSize="14sp"
             android:textStyle="bold" />
