@@ -5,7 +5,9 @@
     android:layout_height="match_parent"
     android:background="#F5F5F5"
     android:orientation="vertical"
-    android:fitsSystemWindows="true"> <include
+    android:fitsSystemWindows="true">
+
+    <include
     android:id="@+id/headerChatAi"
     layout="@layout/layout_header_title" />
 

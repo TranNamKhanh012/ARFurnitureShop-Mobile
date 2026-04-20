@@ -333,6 +333,28 @@ public class ProductDetailActivity extends AppCompatActivity {
         });
 
 
+        // ==========================================
+        // SỰ KIỆN: BẤM NÚT CAMERA ĐỂ MỞ AR THỜI GIAN THỰC
+        // ==========================================
+        com.google.android.material.floatingactionbutton.FloatingActionButton fabTryOn = findViewById(R.id.fabTryOn);
+        if (fabTryOn != null) {
+            fabTryOn.setOnClickListener(v -> {
+                if (currentProduct != null) {
+                    // ĐÃ ĐỔI TÊN BIẾN THÀNH arModelUrl ĐỂ KHÔNG BỊ TRÙNG VỚI BIẾN Ở TRÊN
+                    String arModelUrl = currentProduct.getModelUrl();
+
+                    // KIỂM TRA: Nếu Database chưa có link file 3D thì báo lỗi
+                    if (arModelUrl == null || arModelUrl.trim().isEmpty() || arModelUrl.equals("null")) {
+                        Toast.makeText(ProductDetailActivity.this, "Sản phẩm này chưa có mô hình 3D!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Intent intent = new Intent(ProductDetailActivity.this, FaceArActivity.class);
+                        // Truyền link mô hình 3D (.glb) sang cho AR xử lý
+                        intent.putExtra("PRODUCT_MODEL", arModelUrl);
+                        startActivity(intent);
+                    }
+                }
+            });
+        }
 
     }
 

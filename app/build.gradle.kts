@@ -50,5 +50,6 @@ dependencies {
     implementation("androidx.viewpager2:viewpager2:1.0.0")
     // Thêm thư viện Sceneform nâng cấp (Hỗ trợ quét khuôn mặt cực tốt)
     implementation("com.gorisse.thomas.sceneform:sceneform:1.21.0")
+    implementation("com.google.mlkit:face-detection:16.1.6")
 
 }

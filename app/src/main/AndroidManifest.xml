@@ -76,6 +76,7 @@
         <activity
             android:name=".activities.ForgotPasswordActivity"
             android:exported="false" />
+        <activity android:name=".activities.PhotoTryOnActivity" />
     </application>
 
 

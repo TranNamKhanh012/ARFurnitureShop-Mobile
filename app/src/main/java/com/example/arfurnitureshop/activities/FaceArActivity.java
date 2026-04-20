@@ -20,8 +20,6 @@ public class FaceArActivity extends AppCompatActivity {
 
     private ArFrontFacingFragment arFragment;
     private ModelRenderable glassesRenderable;
-
-    // THAY ĐỔI 1: Dùng Node bình thường thay vì AugmentedFaceNode để KHÔNG bị đen mặt
     private final HashMap<AugmentedFace, Node> faceNodeMap = new HashMap<>();
 
     @Override
@@ -31,61 +29,62 @@ public class FaceArActivity extends AppCompatActivity {
 
         arFragment = (ArFrontFacingFragment) getSupportFragmentManager().findFragmentById(R.id.arFragment);
 
-        String githubModelUrl = "https://raw.githubusercontent.com/TranNamKhanh012/AR-Models/main/balenciaga_sunglasses.glb";
+        // 1. NHẬN LINK MÔ HÌNH 3D TỪ TRANG CHI TIẾT
+        String modelUrl = getIntent().getStringExtra("PRODUCT_MODEL");
 
+        // 2. BẢO VỆ KÉP: Nếu do lỗi mạng mà không nhận được Link thì tự động đóng Camera
+        if (modelUrl == null || modelUrl.trim().isEmpty()) {
+            Toast.makeText(this, "Lỗi dữ liệu mô hình 3D!", Toast.LENGTH_SHORT).show();
+            finish(); // Lệnh đóng trang AR lại ngay lập tức
+            return;   // Dừng không chạy các đoạn code bên dưới nữa
+        }
+
+        // 3. TẢI MÔ HÌNH 3D TỪ INTERNET
         ModelRenderable.builder()
-                .setSource(this, android.net.Uri.parse(githubModelUrl))
+                .setSource(this, android.net.Uri.parse(modelUrl))
                 .setIsFilamentGltf(true)
                 .build()
                 .thenAccept(renderable -> {
                     glassesRenderable = renderable;
                     glassesRenderable.setShadowCaster(false);
                     glassesRenderable.setShadowReceiver(false);
-                    Toast.makeText(this, "Đã tải xong kính từ GitHub!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Tải mô hình 3D thành công!", Toast.LENGTH_SHORT).show();
                 })
                 .exceptionally(throwable -> {
                     Toast.makeText(this, "Lỗi mạng: Không thể tải kính 3D", Toast.LENGTH_SHORT).show();
                     return null;
                 });
 
-        arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
 
+
+        // 4. XỬ LÝ KHUÔN MẶT LIÊN TỤC (THỜI GIAN THỰC)
+        arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
             if (glassesRenderable == null) return;
 
             for (AugmentedFace face : arFragment.getArSceneView().getSession().getAllTrackables(AugmentedFace.class)) {
-
                 if (face.getTrackingState() == TrackingState.TRACKING) {
-
                     Node faceCenterNode;
 
-                    // Nếu là khuôn mặt mới xuất hiện
+                    // Nếu phát hiện khuôn mặt mới
                     if (!faceNodeMap.containsKey(face)) {
-
-                        // 1. Tạo một điểm neo tàng hình ở giữa mặt
                         faceCenterNode = new Node();
                         faceCenterNode.setParent(arFragment.getArSceneView().getScene());
 
-                        // 2. Gắn kính vào điểm neo đó
                         Node glassesNode = new Node();
                         glassesNode.setParent(faceCenterNode);
                         glassesNode.setRenderable(glassesRenderable);
 
-                        // ===============================================
-                        // KHÁNH CHỈNH KÍCH THƯỚC VÀ TỌA ĐỘ KÍNH Ở ĐÂY NHÉ
-                        // ===============================================
-                        glassesNode.setLocalScale(new Vector3(0.8f, 0.6f, 0.2f));
-
-                        // Căn chỉnh 2: Đưa kính lên mắt (Y = 0.03f) và đẩy ra trước (Z = 0.06f)
-                        glassesNode.setLocalPosition(new Vector3(0.0f, 0.02f, 0.06f));
-
+                        // Căn chỉnh tỷ lệ và vị trí của kính
+                        glassesNode.setLocalScale(new Vector3(13.5f, 13.5f, 13.5f));
+                        glassesNode.setLocalPosition(new Vector3(-0.185f, 0.0f, 0.0f));
 
                         faceNodeMap.put(face, faceCenterNode);
                     } else {
-                        // Nếu mặt đã có kính rồi thì lấy ra để cập nhật vị trí
+                        // Khuôn mặt đã có kính, lấy ra để cập nhật
                         faceCenterNode = faceNodeMap.get(face);
                     }
 
-                    // THAY ĐỔI 2: Liên tục bắt cái kính chạy theo đầu của bạn mỗi khi bạn lắc đầu
+                    // Ép kính di chuyển và xoay theo từng nhịp lắc đầu của người dùng
                     Pose centerPose = face.getCenterPose();
                     faceCenterNode.setWorldPosition(new Vector3(centerPose.tx(), centerPose.ty(), centerPose.tz()));
                     faceCenterNode.setWorldRotation(new Quaternion(centerPose.qx(), centerPose.qy(), centerPose.qz(), centerPose.qw()));

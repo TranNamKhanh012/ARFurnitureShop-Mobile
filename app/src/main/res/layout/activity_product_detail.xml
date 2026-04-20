@@ -31,6 +31,19 @@
                     android:scaleType="centerCrop" />
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/fabTryOn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:src="@android:drawable/ic_menu_camera"
+                    app:backgroundTint="#1E88E5"
+                    app:elevation="6dp"
+                    app:tint="@android:color/white" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/fabWishlist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
